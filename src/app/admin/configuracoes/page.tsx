@@ -99,6 +99,33 @@ export default async function SettingsPage() {
                         {game.isActive ? "ATIVO" : "INATIVO"}
                       </span>
                     </div>
+                    <form action={updateGameAction} className="mt-4 grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
+                      <input name="gameId" type="hidden" value={game.id} />
+                      <p className="text-xs font-black uppercase text-[#FFD400]">Editar dados do jogo</p>
+                      <Field label="Nome do jogo">
+                        <input className={inputClass} name="name" required defaultValue={game.name} />
+                      </Field>
+                      <Field label="Slug publico">
+                        <input className={inputClass} name="slug" defaultValue={game.slug} />
+                      </Field>
+                      <Field label="Descricao">
+                        <textarea className={inputClass} name="description" rows={2} defaultValue={game.description} />
+                      </Field>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="Preco">
+                          <input className={inputClass} name="price" min="0" step="0.01" type="number" defaultValue={Number(game.price).toFixed(2)} />
+                        </Field>
+                        <Field label="Vagas">
+                          <input className={inputClass} name="capacity" min="2" type="number" defaultValue={game.capacity} />
+                        </Field>
+                      </div>
+                      <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                        <input name="isActive" type="checkbox" defaultChecked={game.isActive} /> Jogo ativo
+                      </label>
+                      <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                        Salvar alteracoes
+                      </button>
+                    </form>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       <form action={toggleGameStatusAction}>
                         <input name="gameId" type="hidden" value={game.id} />
@@ -114,35 +141,6 @@ export default async function SettingsPage() {
                         </button>
                       </form>
                     </div>
-                    <details className="mt-3 border border-[#B45CFF]/25 bg-black/25 p-3">
-                      <summary className="cursor-pointer text-xs font-black uppercase text-[#FFD400]">Editar jogo</summary>
-                      <form action={updateGameAction} className="mt-3 grid gap-3">
-                        <input name="gameId" type="hidden" value={game.id} />
-                        <Field label="Nome do jogo">
-                          <input className={inputClass} name="name" required defaultValue={game.name} />
-                        </Field>
-                        <Field label="Slug publico">
-                          <input className={inputClass} name="slug" defaultValue={game.slug} />
-                        </Field>
-                        <Field label="Descricao">
-                          <textarea className={inputClass} name="description" rows={3} defaultValue={game.description} />
-                        </Field>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <Field label="Preco">
-                            <input className={inputClass} name="price" min="0" step="0.01" type="number" defaultValue={Number(game.price).toFixed(2)} />
-                          </Field>
-                          <Field label="Vagas">
-                            <input className={inputClass} name="capacity" min="2" type="number" defaultValue={game.capacity} />
-                          </Field>
-                        </div>
-                        <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
-                          <input name="isActive" type="checkbox" defaultChecked={game.isActive} /> Jogo ativo
-                        </label>
-                        <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
-                          Salvar alteracoes
-                        </button>
-                      </form>
-                    </details>
                   </li>
                 ))}
               </ul>
