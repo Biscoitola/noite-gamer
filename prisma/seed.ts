@@ -41,11 +41,14 @@ async function main() {
     }
   });
 
-  const gameData = [
-    ["FIFA 23", "fifa-23", 35, 32],
-    ["Mortal Kombat", "mortal-kombat", 30, 32],
-    ["Guitar Hero", "guitar-hero", 25, 24]
-  ] as const;
+  const shouldSeedDefaultGames = process.env.SEED_DEFAULT_GAMES === "true";
+  const gameData = shouldSeedDefaultGames
+    ? ([
+        ["FIFA 23", "fifa-23", 35, 32],
+        ["Mortal Kombat", "mortal-kombat", 30, 32],
+        ["Guitar Hero", "guitar-hero", 25, 24]
+      ] as const)
+    : [];
   for (const [name, slug, price, capacity] of gameData) {
     await prisma.game.upsert({
       where: { eventId_slug: { eventId: event.id, slug } },
@@ -145,7 +148,7 @@ async function main() {
     });
   }
 
-  console.log(`Seed concluido: admin ${admin.email}, evento ${event.name} ${event.edition} e ${gameData.length} jogos.`);
+  console.log(`Seed concluido: admin ${admin.email}, evento ${event.name} ${event.edition} e ${gameData.length} jogos padrao.`);
 }
 
 main()
