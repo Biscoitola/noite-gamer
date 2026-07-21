@@ -6,9 +6,9 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminTournamentsPage({ searchParams }: { searchParams: Promise<{ torneio?: string }> }) {
+export default async function AdminTournamentsPage({ searchParams }: { searchParams: Promise<{ torneio?: string; success?: string; error?: string }> }) {
   await requireAdmin();
-  const { torneio } = await searchParams;
+  const { torneio, success, error } = await searchParams;
   const games = await prisma.game.findMany({ where: { isActive: true } });
   const tournaments = await prisma.tournament.findMany({
     orderBy: { updatedAt: "desc" },
@@ -33,6 +33,16 @@ export default async function AdminTournamentsPage({ searchParams }: { searchPar
   return (
     <Container className="grid gap-5">
       <h1 className="text-3xl font-black">Torneios</h1>
+      {success ? (
+        <div className="border border-emerald-400/40 bg-emerald-400/10 p-3 text-sm font-black text-emerald-100">
+          {success}
+        </div>
+      ) : null}
+      {error ? (
+        <div className="border border-red-400/45 bg-red-500/10 p-3 text-sm font-black text-red-100">
+          {error}
+        </div>
+      ) : null}
       <Panel>
         <form action={generateTournamentAction} className="flex flex-wrap gap-3">
           <select name="gameId" className="min-h-12 border border-[#FFD400]/35 bg-black px-3">
