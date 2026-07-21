@@ -70,7 +70,8 @@ async function main() {
     typeof carouselSetting.value !== "object" ||
     Array.isArray(carouselSetting.value) ||
     !Array.isArray((carouselSetting.value as { images?: unknown }).images) ||
-    (carouselSetting.value as { images?: unknown[] }).images?.length === 0;
+    (carouselSetting.value as { images?: unknown[] }).images?.length === 0 ||
+    hasOnlyBundledCarouselImages((carouselSetting.value as { images?: unknown[] }).images);
   const defaultCarouselConfig = {
     speedSeconds: 28,
     images: [
@@ -154,3 +155,12 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+function hasOnlyBundledCarouselImages(images: unknown[] | undefined) {
+  if (!images?.length) return false;
+  return images.every((image) => {
+    if (!image || typeof image !== "object" || Array.isArray(image)) return false;
+    const imageUrl = (image as { imageUrl?: unknown }).imageUrl;
+    return typeof imageUrl === "string" && imageUrl.startsWith("/assets/carousel-");
+  });
+}
