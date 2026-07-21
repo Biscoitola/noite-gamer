@@ -63,6 +63,87 @@ async function main() {
     });
   }
 
+  const carouselSetting = await prisma.systemSetting.findUnique({ where: { key: "home.carouselConfig" } });
+  const shouldSeedCarousel =
+    !carouselSetting ||
+    !carouselSetting.value ||
+    typeof carouselSetting.value !== "object" ||
+    Array.isArray(carouselSetting.value) ||
+    !Array.isArray((carouselSetting.value as { images?: unknown }).images) ||
+    (carouselSetting.value as { images?: unknown[] }).images?.length === 0;
+  const defaultCarouselConfig = {
+    speedSeconds: 28,
+    images: [
+      {
+        id: "carousel-noite-gamer",
+        title: "Noite Gamer",
+        imageUrl: "/assets/carousel-noite-gamer.jpeg",
+        linkUrl: "/inscricao",
+        order: 1,
+        isActive: true
+      },
+      {
+        id: "carousel-game-comeca",
+        title: "O game comeca aqui",
+        imageUrl: "/assets/carousel-game-comeca.jpeg",
+        linkUrl: "/inscricao",
+        order: 2,
+        isActive: true
+      },
+      {
+        id: "carousel-competicao",
+        title: "Competicao do seu jeito",
+        imageUrl: "/assets/carousel-competicao.jpeg",
+        linkUrl: "/torneios",
+        order: 3,
+        isActive: true
+      },
+      {
+        id: "carousel-galera",
+        title: "Traga sua galera",
+        imageUrl: "/assets/carousel-galera.jpeg",
+        linkUrl: "/inscricao",
+        order: 4,
+        isActive: true
+      },
+      {
+        id: "carousel-noite-epica",
+        title: "Sua noite epica te espera",
+        imageUrl: "/assets/carousel-noite-epica.jpeg",
+        linkUrl: "/inscricao",
+        order: 5,
+        isActive: true
+      },
+      {
+        id: "carousel-muito-mais",
+        title: "Muito mais que jogos",
+        imageUrl: "/assets/carousel-muito-mais.jpeg",
+        linkUrl: "/sorteios",
+        order: 6,
+        isActive: true
+      },
+      {
+        id: "carousel-save-date",
+        title: "Save the date",
+        imageUrl: "/assets/carousel-save-date.jpeg",
+        linkUrl: "/inscricao",
+        order: 7,
+        isActive: true
+      }
+    ]
+  };
+
+  if (shouldSeedCarousel) {
+    await prisma.systemSetting.upsert({
+      where: { key: "home.carouselConfig" },
+      update: { value: defaultCarouselConfig },
+      create: {
+        key: "home.carouselConfig",
+        value: defaultCarouselConfig
+      }
+    });
+  }
+
   console.log(`Seed concluido: admin ${admin.email}, evento ${event.name} ${event.edition} e ${gameData.length} jogos.`);
 }
 
