@@ -1,26 +1,31 @@
 import { ButtonLink, Container, Panel } from "@/components/ui";
 import { EventLogo, PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
-import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const events = await prisma.event
-    .findMany({
-      orderBy: { startsAt: "desc" },
-      include: { sponsors: { where: { isActive: true, showInCarousel: true }, orderBy: [{ carouselOrder: "asc" }, { createdAt: "desc" }] } }
-    })
-    .catch(() => []);
-  const games = await prisma.game
-    .findMany({
-      where: { isActive: true, event: { status: "ACTIVE" } },
-      orderBy: { name: "asc" }
-    })
-    .catch(() => []);
+  const [events, games, heroPosterSetting] = await Promise.all([
+    prisma.event
+      .findMany({
+        orderBy: { startsAt: "desc" },
+        include: { sponsors: { where: { isActive: true, showInCarousel: true }, orderBy: [{ carouselOrder: "asc" }, { createdAt: "desc" }] } }
+      })
+      .catch(() => []),
+    prisma.game
+      .findMany({
+        where: { isActive: true, event: { status: "ACTIVE" } },
+        orderBy: { name: "asc" }
+      })
+      .catch(() => []),
+    prisma.systemSetting.findUnique({ where: { key: "home.heroPosterUrl" } }).catch(() => null)
+  ]);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
   const sponsors = activeEvent?.sponsors ?? [];
   const carouselSponsors = sponsors.length > 0 ? [...sponsors, ...sponsors] : [];
+  const heroPosterUrl = typeof heroPosterSetting?.value === "string" && heroPosterSetting.value.trim()
+    ? heroPosterSetting.value
+    : "/assets/folder-noite-gamer.png";
   return (
     <div className="scratched min-h-screen neon-page">
       <PublicHeader showBack={false} />
@@ -41,12 +46,9 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="folder-showcase animate-float">
-            <Image
-              src="/assets/folder-noite-gamer.png"
+            <img
+              src={heroPosterUrl}
               alt="Folder da Noite Gamer 2a Edicao"
-              width={1024}
-              height={1536}
-              priority
               className="folder-image"
             />
           </div>

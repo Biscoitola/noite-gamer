@@ -112,6 +112,23 @@ export async function deleteGameAction(formData: FormData) {
   revalidateGamePages();
 }
 
+export async function updateHomeHeroPosterAction(formData: FormData) {
+  await requireAdmin();
+  const imageUrl = String(formData.get("imageUrl") || "").trim();
+  if (imageUrl && !isAllowedImageSource(imageUrl)) {
+    throw new Error("Use uma URL completa https:// ou um caminho interno que comece com /.");
+  }
+
+  await prisma.systemSetting.upsert({
+    where: { key: "home.heroPosterUrl" },
+    update: { value: imageUrl || "/assets/folder-noite-gamer.png" },
+    create: { key: "home.heroPosterUrl", value: imageUrl || "/assets/folder-noite-gamer.png" }
+  });
+
+  revalidatePath("/admin/configuracoes");
+  revalidatePath("/");
+}
+
 function slugify(value: string) {
   return value
     .normalize("NFD")
@@ -119,6 +136,16 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function isAllowedImageSource(value: string) {
+  if (value.startsWith("/")) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function revalidateGamePages() {

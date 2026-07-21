@@ -1,7 +1,7 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createEditionAction, createGameAction, deleteGameAction, toggleGameStatusAction, updateGameAction } from "./actions";
+import { createEditionAction, createGameAction, deleteGameAction, toggleGameStatusAction, updateGameAction, updateHomeHeroPosterAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +11,46 @@ export default async function SettingsPage() {
     orderBy: { startsAt: "desc" },
     include: { games: { orderBy: { name: "asc" }, include: { _count: { select: { items: true, tournaments: true } } } } }
   });
+  const heroPosterSetting = await prisma.systemSetting.findUnique({ where: { key: "home.heroPosterUrl" } });
+  const heroPosterUrl = typeof heroPosterSetting?.value === "string" && heroPosterSetting.value.trim()
+    ? heroPosterSetting.value
+    : "/assets/folder-noite-gamer.png";
   return (
     <Container className="grid gap-5">
       <div>
         <p className="text-sm font-black uppercase text-[#B45CFF]">Conteudo editavel</p>
         <h1 className="text-3xl font-black text-glow">Edicoes e jogos</h1>
       </div>
+
+      <Panel className="interactive-panel">
+        <div className="grid gap-4 lg:grid-cols-[1fr_240px] lg:items-start">
+          <div>
+            <h2 className="text-xl font-black text-[#FFD400]">Imagem principal da home</h2>
+            <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
+              Cole uma URL publica da imagem do folder. Ela aparece automaticamente para todos na tela inicial.
+            </p>
+            <form action={updateHomeHeroPosterAction} className="mt-4 grid gap-3">
+              <Field label="URL da imagem">
+                <input
+                  className={inputClass}
+                  name="imageUrl"
+                  placeholder="https://..."
+                  defaultValue={heroPosterUrl}
+                />
+              </Field>
+              <p className="text-xs text-[#A3A3A3]">
+                Para voltar ao padrao, salve vazio ou use /assets/folder-noite-gamer.png.
+              </p>
+              <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">
+                Salvar imagem da home
+              </button>
+            </form>
+          </div>
+          <div className="border border-[#FFD400]/30 bg-black/30 p-2">
+            <img className="aspect-[2/3] w-full object-cover" src={heroPosterUrl} alt="Preview da imagem principal da home" />
+          </div>
+        </div>
+      </Panel>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Panel className="interactive-panel">
