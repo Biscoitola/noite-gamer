@@ -5,7 +5,7 @@ import type { PaymentProvider, PaymentWebhookEvent, PixCharge, PixChargeInput } 
 export class ManualPixProvider implements PaymentProvider {
   async createPixCharge(input: PixChargeInput): Promise<PixCharge> {
     if (!env.PIX_KEY) throw new Error("PIX_KEY nao configurada.");
-    const txid = sanitizeTxid(input.registrationId).slice(0, 25);
+    const txid = sanitizeTxid(input.referenceCode || input.registrationId).slice(0, 25);
     const qrCodeText = buildPixPayload({
       pixKey: env.PIX_KEY,
       receiverName: env.PIX_RECEIVER_NAME,

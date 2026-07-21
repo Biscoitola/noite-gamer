@@ -3,6 +3,7 @@ export type PixChargeInput = {
   amount: number;
   payerName: string;
   payerEmail?: string | null;
+  referenceCode?: string;
   expiresAt: Date;
   idempotencyKey: string;
 };

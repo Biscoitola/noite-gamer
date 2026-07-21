@@ -23,6 +23,7 @@ export async function createRegistration(input: RegistrationInput) {
   const totals = calculateRegistrationTotal(games.map((game) => ({ gameId: game.id, price: Number(game.price) })));
   const token = createPublicToken();
   const participantToken = createPublicToken();
+  const protocol = createProtocol();
   const expiresAt = addMinutes(new Date(), Number((event.settings as { paymentExpiresInMinutes?: number }).paymentExpiresInMinutes ?? 30));
   const normalizedWhatsapp = normalizeWhatsapp(input.whatsapp);
 
@@ -57,7 +58,7 @@ export async function createRegistration(input: RegistrationInput) {
         participantId: participant.id,
         status: "AGUARDANDO_PAGAMENTO",
         totalAmount: totals.total,
-        protocol: createProtocol(),
+        protocol,
         publicTokenHash: hashToken(token),
         expiresAt,
         items: {
@@ -79,6 +80,7 @@ export async function createRegistration(input: RegistrationInput) {
       amount: totals.total,
       payerName: participant.fullName,
       payerEmail: participant.email,
+      referenceCode: registration.protocol,
       expiresAt,
       idempotencyKey: nanoid(32)
     });

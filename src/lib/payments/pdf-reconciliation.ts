@@ -101,6 +101,11 @@ async function findMatchingPayment(transaction: PdfTransaction) {
   });
   const description = normalizeText(transaction.description);
   return candidates.find((payment) => {
+    const paymentReference = normalizeText(payment.externalId.replace(/^manualpix_/, ""));
+    const protocolReference = normalizeText(payment.registration.protocol);
+    if (paymentReference && description.includes(paymentReference)) return true;
+    if (protocolReference && description.includes(protocolReference)) return true;
+
     const participant = payment.registration.participant;
     const fullName = normalizeText(participant.fullName);
     const publicName = normalizeText(participant.publicName);

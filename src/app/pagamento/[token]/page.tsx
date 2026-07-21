@@ -28,10 +28,8 @@ export default async function PaymentPage({ params }: { params: Promise<{ token:
               <div className="border border-[#FFD400]/50 bg-[#FFD400]/10 p-4 text-sm leading-6">
                 <strong className="block text-[#FFD400]">Importante para confirmar sua inscricao</strong>
                 <p>Faca o Pix exatamente no valor exibido. Pix com valor diferente pode nao ser identificado automaticamente.</p>
-                <p>
-                  Na descricao/identificacao do Pix, informe seu nome completo:
-                  <strong> {registration.participant.fullName}</strong>
-                </p>
+                <p>O QR Code ja leva o identificador da sua inscricao: <strong>{registration.protocol}</strong>.</p>
+                <p>Se o aplicativo do banco permitir descricao, pode informar seu nome completo, mas nao e obrigatorio.</p>
                 <p>A inscricao ficara aguardando pagamento ate a organizacao importar o extrato PDF do banco e confirmar o pagamento.</p>
               </div>
             ) : null}
