@@ -6,7 +6,7 @@ function entries(count: number) {
 }
 
 describe("single elimination bracket", () => {
-  for (const count of [2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 32, 33, 64]) {
+  for (const count of [1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 32, 33, 64]) {
     it(`gera chave valida para ${count} participantes`, () => {
       const bracket = generateSingleEliminationBracket(entries(count));
       expect(bracket.bracketSize).toBeGreaterThanOrEqual(count);

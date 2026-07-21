@@ -32,8 +32,8 @@ export function generateSingleEliminationBracket(entries: BracketEntry[]): Gener
   if (uniqueIds.size !== entries.length) {
     throw new Error("Participante duplicado no chaveamento.");
   }
-  if (entries.length < 2) {
-    throw new Error("Sao necessarios ao menos 2 participantes.");
+  if (entries.length < 1) {
+    throw new Error("Sao necessarios participantes confirmados.");
   }
   if (entries.length > 64) {
     throw new Error("O limite inicial e de 64 participantes.");

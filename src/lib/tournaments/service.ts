@@ -17,14 +17,20 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
       },
       include: { registration: { include: { participant: true } }, entries: true, checkIns: true }
     });
+    const existingEntries = await tx.tournamentEntry.findMany({
+      where: { tournamentId: tournament.id },
+      select: { seed: true, registrationItemId: true }
+    });
+    const existingItemIds = new Set(existingEntries.map((entry) => entry.registrationItemId));
+    const maxSeed = existingEntries.reduce((current, entry) => Math.max(current, entry.seed), 0);
     await tx.tournamentEntry.createMany({
       data: items
-        .filter((item) => item.entries.every((entry) => entry.tournamentId !== tournament.id))
+        .filter((item) => !existingItemIds.has(item.id))
         .map((item, index) => ({
           tournamentId: tournament.id,
           registrationItemId: item.id,
           participantId: item.registration.participantId,
-          seed: index + 1,
+          seed: maxSeed + index + 1,
           checkedIn: item.checkIns?.some((checkIn) => checkIn.canceledAt === null) ?? false
         })),
       skipDuplicates: true
@@ -69,6 +75,23 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
     });
     return tournament.id;
   });
+}
+
+export async function ensurePublicTournamentForGameSlug(slug: string) {
+  const game = await prisma.game.findFirstOrThrow({ where: { slug, isActive: true }, include: { event: true } });
+  const confirmedCount = await prisma.registrationItem.count({
+    where: { gameId: game.id, status: "CONFIRMED", registration: { status: "CONFIRMADA" } }
+  });
+  if (confirmedCount < 1) return null;
+  const existingTournament = await prisma.tournament.findUnique({
+    where: { eventId_gameId: { eventId: game.eventId, gameId: game.id } },
+    include: { _count: { select: { matches: { where: { status: "FINISHED" } } } } }
+  });
+  if (existingTournament && (existingTournament.status === "STARTED" || existingTournament.status === "FINISHED" || existingTournament._count.matches > 0)) {
+    return game.slug;
+  }
+  await ensureTournamentForGame(game.id);
+  return game.slug;
 }
 
 export async function registerMatchWinner(matchId: string, winnerEntryId: string, scoreData?: object) {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
+import { ensurePublicTournamentForGameSlug } from "@/lib/tournaments/service";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ type SideRound = Omit<PublicRound, "matches"> & {
 
 export default async function TournamentSlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await ensurePublicTournamentForGameSlug(slug).catch(() => null);
   const tournament = await prisma.tournament.findFirst({
     where: { public: true, game: { slug } },
     include: {
