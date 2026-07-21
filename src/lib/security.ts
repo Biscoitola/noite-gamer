@@ -25,6 +25,10 @@ export function createProtocol(prefix = "NG") {
   return `${prefix}-${stamp}-${nanoid(8).toUpperCase()}`;
 }
 
+export function createRaffleCode(prefix = "NGS") {
+  return `${prefix}-${nanoid(8).toUpperCase()}`;
+}
+
 export function normalizeWhatsapp(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.startsWith("55")) return digits;

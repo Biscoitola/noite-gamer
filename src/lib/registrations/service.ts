@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { prisma } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments";
 import { calculateRegistrationTotal } from "@/lib/pricing";
-import { createProtocol, createPublicToken, hashToken, normalizeWhatsapp } from "@/lib/security";
+import { createProtocol, createPublicToken, createRaffleCode, hashToken, normalizeWhatsapp } from "@/lib/security";
 import type { RegistrationInput } from "./schema";
 
 export async function listActiveGames() {
@@ -24,6 +24,7 @@ export async function createRegistration(input: RegistrationInput) {
   const token = createPublicToken();
   const participantToken = createPublicToken();
   const protocol = createProtocol();
+  const raffleCode = createRaffleCode();
   const expiresAt = addMinutes(new Date(), Number((event.settings as { paymentExpiresInMinutes?: number }).paymentExpiresInMinutes ?? 30));
   const normalizedWhatsapp = normalizeWhatsapp(input.whatsapp);
 
@@ -59,6 +60,7 @@ export async function createRegistration(input: RegistrationInput) {
         status: "AGUARDANDO_PAGAMENTO",
         totalAmount: totals.total,
         protocol,
+        raffleCode,
         publicTokenHash: hashToken(token),
         expiresAt,
         items: {

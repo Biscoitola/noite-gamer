@@ -8,6 +8,7 @@ const adminLinks = [
   { href: "/admin/relatorios/inscritos", label: "Relatorios", code: "RP" },
   { href: "/admin/check-in", label: "Check-in", code: "CK" },
   { href: "/admin/torneios", label: "Torneios", code: "TR" },
+  { href: "/admin/patrocinadores", label: "Patrocinadores", code: "PT" },
   { href: "/admin/configuracoes", label: "Configuracoes", code: "CF" }
 ];
 

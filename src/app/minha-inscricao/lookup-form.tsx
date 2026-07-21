@@ -41,6 +41,10 @@ export function RegistrationLookupForm() {
               <p className="text-sm font-bold uppercase text-[#A3A3A3]">Protocolo</p>
               <strong className="text-2xl text-[#FFD400]">{state.registration.protocol}</strong>
             </div>
+            <div>
+              <p className="text-sm font-bold uppercase text-[#A3A3A3]">Ticket para sorteios</p>
+              <strong className="text-2xl text-[#FFD400]">{state.registration.raffleCode}</strong>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Info label="Nome" value={state.registration.fullName} />
               <Info label="Nick na chave" value={state.registration.publicName} />

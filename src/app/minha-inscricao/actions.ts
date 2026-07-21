@@ -7,6 +7,7 @@ export type RegistrationLookupState = {
   error?: string;
   registration?: {
     protocol: string;
+    raffleCode: string;
     status: string;
     totalAmount: string;
     publicName: string;
@@ -44,6 +45,7 @@ export async function lookupRegistration(_prevState: RegistrationLookupState, fo
   return {
     registration: {
       protocol: registration.protocol,
+      raffleCode: registration.raffleCode ?? registration.protocol,
       status: registration.status,
       totalAmount: Number(registration.totalAmount).toFixed(2),
       publicName: registration.participant.publicName,
