@@ -10,12 +10,12 @@ export default async function TournamentsPage() {
   const games = await prisma.game.findMany({
     where: {
       isActive: true,
-      items: { some: { status: "CONFIRMED", registration: { status: "CONFIRMADA" } } }
+      items: { some: { status: { in: ["CONFIRMED", "RESERVED"] }, registration: { status: "CONFIRMADA" } } }
     },
     include: {
       event: true,
       tournaments: { where: { public: true }, take: 1 },
-      _count: { select: { items: { where: { status: "CONFIRMED", registration: { status: "CONFIRMADA" } } } } }
+      _count: { select: { items: { where: { status: { in: ["CONFIRMED", "RESERVED"] }, registration: { status: "CONFIRMADA" } } } } }
     },
     orderBy: { name: "asc" }
   }).catch(() => []);
@@ -23,11 +23,11 @@ export default async function TournamentsPage() {
   await Promise.all(games.filter((game) => game.tournaments.length === 0).map((game) => ensureTournamentForGame(game.id).catch(() => null)));
 
   const tournaments = await prisma.tournament.findMany({
-    where: { public: true, game: { isActive: true, items: { some: { status: "CONFIRMED", registration: { status: "CONFIRMADA" } } } } },
+    where: { public: true, game: { isActive: true, items: { some: { status: { in: ["CONFIRMED", "RESERVED"] }, registration: { status: "CONFIRMADA" } } } } },
     include: {
       game: {
         include: {
-          _count: { select: { items: { where: { status: "CONFIRMED", registration: { status: "CONFIRMADA" } } } } }
+          _count: { select: { items: { where: { status: { in: ["CONFIRMED", "RESERVED"] }, registration: { status: "CONFIRMADA" } } } } }
         }
       }
     },

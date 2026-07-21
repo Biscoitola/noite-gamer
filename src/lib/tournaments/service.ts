@@ -12,7 +12,8 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
     const items = await tx.registrationItem.findMany({
       where: {
         gameId,
-        status: "CONFIRMED",
+        status: { in: ["CONFIRMED", "RESERVED"] },
+        registration: { status: "CONFIRMADA" },
         ...(onlyCheckedIn ? { checkIns: { some: { canceledAt: null } } } : {})
       },
       include: { registration: { include: { participant: true } }, entries: true, checkIns: true }
@@ -80,7 +81,7 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
 export async function ensurePublicTournamentForGameSlug(slug: string) {
   const game = await prisma.game.findFirstOrThrow({ where: { slug, isActive: true }, include: { event: true } });
   const confirmedCount = await prisma.registrationItem.count({
-    where: { gameId: game.id, status: "CONFIRMED", registration: { status: "CONFIRMADA" } }
+    where: { gameId: game.id, status: { in: ["CONFIRMED", "RESERVED"] }, registration: { status: "CONFIRMADA" } }
   });
   if (confirmedCount < 1) return null;
   const existingTournament = await prisma.tournament.findUnique({
