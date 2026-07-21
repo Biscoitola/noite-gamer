@@ -23,10 +23,11 @@ export function PublicHeader({ showBack = true }: { showBack?: boolean }) {
         <nav className="public-nav-links ml-auto flex flex-wrap items-center gap-2 text-xs font-black uppercase">
           <Link href="/">Home</Link>
           <Link className="public-nav-cta" href="/inscricao">Inscricao</Link>
+          <Link href="/minha-inscricao">Minha inscricao</Link>
           <Link href="/torneios">Torneios</Link>
           <Link href="/ao-vivo">Ao vivo</Link>
           <Link href="/regulamento">Regulamento</Link>
-          <Link href="/admin">Admin</Link>
+          <Link href="/admin">Entrar (somente admin)</Link>
         </nav>
         {showBack ? <BackButton /> : null}
       </div>
