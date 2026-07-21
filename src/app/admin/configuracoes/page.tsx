@@ -1,7 +1,19 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createEditionAction, createGameAction, deleteGameAction, toggleGameStatusAction, updateGameAction, updateHomeHeroPosterAction } from "./actions";
+import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
+import {
+  createEditionAction,
+  createGameAction,
+  createHomeCarouselImageAction,
+  deleteGameAction,
+  deleteHomeCarouselImageAction,
+  toggleGameStatusAction,
+  updateGameAction,
+  updateHomeCarouselImageAction,
+  updateHomeCarouselSettingsAction,
+  updateHomeHeroPosterAction
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +23,9 @@ export default async function SettingsPage() {
     orderBy: { startsAt: "desc" },
     include: { games: { orderBy: { name: "asc" }, include: { _count: { select: { items: true, tournaments: true } } } } }
   });
-  const heroPosterSetting = await prisma.systemSetting.findUnique({ where: { key: "home.heroPosterUrl" } });
-  const heroPosterUrl = typeof heroPosterSetting?.value === "string" && heroPosterSetting.value.trim()
-    ? heroPosterSetting.value
-    : "/assets/folder-noite-gamer.png";
+  const settings = await prisma.systemSetting.findMany({ where: { key: { in: [HOME_HERO_POSTER_KEY, HOME_CAROUSEL_KEY] } } });
+  const heroPosterUrl = readStringSetting(settings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value, DEFAULT_HERO_POSTER_URL);
+  const carouselConfig = parseHomeCarouselConfig(settings.find((setting) => setting.key === HOME_CAROUSEL_KEY)?.value);
   return (
     <Container className="grid gap-5">
       <div>
@@ -49,6 +60,75 @@ export default async function SettingsPage() {
           <div className="border border-[#FFD400]/30 bg-black/30 p-2">
             <img className="aspect-[2/3] w-full object-cover" src={heroPosterUrl} alt="Preview da imagem principal da home" />
           </div>
+        </div>
+      </Panel>
+
+      <Panel className="interactive-panel">
+        <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <div>
+            <h2 className="text-xl font-black text-[#FFD400]">Carrossel da home</h2>
+            <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
+              As imagens abaixo aparecem junto com os patrocinadores marcados para o carrossel. Use para artes, chamadas, brindes ou banners extras.
+            </p>
+            <form action={updateHomeCarouselSettingsAction} className="mt-4 grid gap-3">
+              <Field label="Velocidade da animacao em segundos">
+                <input className={inputClass} name="speedSeconds" min="8" max="90" type="number" defaultValue={carouselConfig.speedSeconds} />
+              </Field>
+              <button className="focus-ring min-h-12 bg-[#B45CFF] px-4 font-black uppercase text-white shadow-[0_0_22px_rgba(180,92,255,0.28)]">
+                Salvar configuracao do carrossel
+              </button>
+            </form>
+          </div>
+          <form action={createHomeCarouselImageAction} className="grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
+            <p className="text-xs font-black uppercase text-[#FFD400]">Adicionar imagem extra</p>
+            <Field label="Titulo"><input className={inputClass} name="title" required placeholder="Patrocinador, brinde, chamada..." /></Field>
+            <Field label="URL da imagem"><input className={inputClass} name="imageUrl" required placeholder="https://..." /></Field>
+            <Field label="Link ao clicar"><input className={inputClass} name="linkUrl" placeholder="/patrocinadores ou https://..." /></Field>
+            <Field label="Ordem"><input className={inputClass} name="order" type="number" defaultValue="0" /></Field>
+            <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+              <input name="isActive" type="checkbox" defaultChecked /> Mostrar no carrossel
+            </label>
+            <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">
+              Adicionar imagem
+            </button>
+          </form>
+        </div>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {carouselConfig.images.length > 0 ? carouselConfig.images.map((image) => (
+            <article className="grid gap-3 border border-[#FFD400]/25 bg-[#111111] p-3" key={image.id}>
+              <div className="flex gap-3">
+                <img src={image.imageUrl} alt={image.title} className="h-20 w-28 border border-[#B45CFF]/35 bg-white object-contain p-1" />
+                <div>
+                  <strong className="text-[#FFD400]">{image.title}</strong>
+                  <p className="text-xs uppercase text-[#B45CFF]">Ordem {image.order} | {image.isActive ? "visivel" : "oculta"}</p>
+                  <p className="mt-1 break-all text-xs text-[#A3A3A3]">{image.linkUrl || "Sem link"}</p>
+                </div>
+              </div>
+              <form action={updateHomeCarouselImageAction} className="grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
+                <input name="imageId" type="hidden" value={image.id} />
+                <Field label="Titulo"><input className={inputClass} name="title" required defaultValue={image.title} /></Field>
+                <Field label="URL da imagem"><input className={inputClass} name="imageUrl" required defaultValue={image.imageUrl} /></Field>
+                <Field label="Link ao clicar"><input className={inputClass} name="linkUrl" defaultValue={image.linkUrl} /></Field>
+                <Field label="Ordem"><input className={inputClass} name="order" type="number" defaultValue={image.order} /></Field>
+                <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                  <input name="isActive" type="checkbox" defaultChecked={image.isActive} /> Mostrar no carrossel
+                </label>
+                <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                  Salvar imagem
+                </button>
+              </form>
+              <form action={deleteHomeCarouselImageAction}>
+                <input name="imageId" type="hidden" value={image.id} />
+                <button className="focus-ring min-h-10 w-full border border-red-500/50 px-3 text-xs font-black uppercase text-red-200 hover:bg-red-500/10">
+                  Remover imagem
+                </button>
+              </form>
+            </article>
+          )) : (
+            <div className="border border-[#B45CFF]/25 bg-black/25 p-4 text-sm text-[#A3A3A3] lg:col-span-2">
+              Nenhuma imagem extra cadastrada. O carrossel ainda pode usar os patrocinadores marcados na aba Patrocinadores.
+            </div>
+          )}
         </div>
       </Panel>
 

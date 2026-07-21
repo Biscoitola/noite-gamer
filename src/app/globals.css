@@ -313,7 +313,7 @@ a {
   display: flex;
   width: max-content;
   gap: 14px;
-  animation: sponsor-marquee 28s linear infinite;
+  animation: sponsor-marquee var(--carousel-duration, 28s) linear infinite;
 }
 
 .sponsor-carousel:hover .sponsor-carousel-track {

@@ -1,8 +1,18 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import {
+  DEFAULT_HERO_POSTER_URL,
+  DEFAULT_HOME_CAROUSEL_CONFIG,
+  HOME_CAROUSEL_KEY,
+  HOME_HERO_POSTER_KEY,
+  isAllowedImageSource,
+  isAllowedOptionalLink,
+  parseHomeCarouselConfig
+} from "@/lib/home-settings";
 
 export async function createEditionAction(formData: FormData) {
   await requireAdmin();
@@ -120,13 +130,73 @@ export async function updateHomeHeroPosterAction(formData: FormData) {
   }
 
   await prisma.systemSetting.upsert({
-    where: { key: "home.heroPosterUrl" },
-    update: { value: imageUrl || "/assets/folder-noite-gamer.png" },
-    create: { key: "home.heroPosterUrl", value: imageUrl || "/assets/folder-noite-gamer.png" }
+    where: { key: HOME_HERO_POSTER_KEY },
+    update: { value: imageUrl || DEFAULT_HERO_POSTER_URL },
+    create: { key: HOME_HERO_POSTER_KEY, value: imageUrl || DEFAULT_HERO_POSTER_URL }
   });
 
   revalidatePath("/admin/configuracoes");
   revalidatePath("/");
+}
+
+export async function updateHomeCarouselSettingsAction(formData: FormData) {
+  await requireAdmin();
+  const config = await getHomeCarouselConfig();
+  config.speedSeconds = Number(formData.get("speedSeconds") || DEFAULT_HOME_CAROUSEL_CONFIG.speedSeconds);
+  await saveHomeCarouselConfig(config);
+}
+
+export async function createHomeCarouselImageAction(formData: FormData) {
+  await requireAdmin();
+  const title = String(formData.get("title") || "").trim();
+  const imageUrl = String(formData.get("imageUrl") || "").trim();
+  const linkUrl = String(formData.get("linkUrl") || "").trim();
+  if (!title || !imageUrl) throw new Error("Informe titulo e URL da imagem.");
+  if (!isAllowedImageSource(imageUrl)) throw new Error("Use uma URL de imagem https:// ou caminho interno iniciado com /.");
+  if (!isAllowedOptionalLink(linkUrl)) throw new Error("Use um link https://, http://, caminho interno iniciado com / ou deixe vazio.");
+
+  const config = await getHomeCarouselConfig();
+  config.images.push({
+    id: randomUUID(),
+    title,
+    imageUrl,
+    linkUrl,
+    order: Number(formData.get("order") || 0),
+    isActive: formData.get("isActive") === "on"
+  });
+  await saveHomeCarouselConfig(config);
+}
+
+export async function updateHomeCarouselImageAction(formData: FormData) {
+  await requireAdmin();
+  const imageId = String(formData.get("imageId") || "");
+  const title = String(formData.get("title") || "").trim();
+  const imageUrl = String(formData.get("imageUrl") || "").trim();
+  const linkUrl = String(formData.get("linkUrl") || "").trim();
+  if (!imageId || !title || !imageUrl) throw new Error("Imagem do carrossel invalida.");
+  if (!isAllowedImageSource(imageUrl)) throw new Error("Use uma URL de imagem https:// ou caminho interno iniciado com /.");
+  if (!isAllowedOptionalLink(linkUrl)) throw new Error("Use um link https://, http://, caminho interno iniciado com / ou deixe vazio.");
+
+  const config = await getHomeCarouselConfig();
+  config.images = config.images.map((image) => image.id === imageId
+    ? {
+        ...image,
+        title,
+        imageUrl,
+        linkUrl,
+        order: Number(formData.get("order") || 0),
+        isActive: formData.get("isActive") === "on"
+      }
+    : image);
+  await saveHomeCarouselConfig(config);
+}
+
+export async function deleteHomeCarouselImageAction(formData: FormData) {
+  await requireAdmin();
+  const imageId = String(formData.get("imageId") || "");
+  const config = await getHomeCarouselConfig();
+  config.images = config.images.filter((image) => image.id !== imageId);
+  await saveHomeCarouselConfig(config);
 }
 
 function slugify(value: string) {
@@ -136,16 +206,6 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-function isAllowedImageSource(value: string) {
-  if (value.startsWith("/")) return true;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function revalidateGamePages() {
@@ -174,4 +234,20 @@ function buildLocalDateTime(
     throw new Error("Data invalida. Informe data e horario completos.");
   }
   return parsed;
+}
+
+async function getHomeCarouselConfig() {
+  const setting = await prisma.systemSetting.findUnique({ where: { key: HOME_CAROUSEL_KEY } });
+  return parseHomeCarouselConfig(setting?.value);
+}
+
+async function saveHomeCarouselConfig(config: Awaited<ReturnType<typeof getHomeCarouselConfig>>) {
+  const cleanConfig = parseHomeCarouselConfig(config);
+  await prisma.systemSetting.upsert({
+    where: { key: HOME_CAROUSEL_KEY },
+    update: { value: cleanConfig },
+    create: { key: HOME_CAROUSEL_KEY, value: cleanConfig }
+  });
+  revalidatePath("/admin/configuracoes");
+  revalidatePath("/");
 }

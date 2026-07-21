@@ -1,11 +1,13 @@
 import { ButtonLink, Container, Panel } from "@/components/ui";
 import { EventLogo, PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
+import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
+import type { CSSProperties } from "react";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [events, games, heroPosterSetting] = await Promise.all([
+  const [events, games, homeSettings] = await Promise.all([
     prisma.event
       .findMany({
         orderBy: { startsAt: "desc" },
@@ -18,14 +20,31 @@ export default async function HomePage() {
         orderBy: { name: "asc" }
       })
       .catch(() => []),
-    prisma.systemSetting.findUnique({ where: { key: "home.heroPosterUrl" } }).catch(() => null)
+    prisma.systemSetting.findMany({ where: { key: { in: [HOME_HERO_POSTER_KEY, HOME_CAROUSEL_KEY] } } }).catch(() => [])
   ]);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
   const sponsors = activeEvent?.sponsors ?? [];
-  const carouselSponsors = sponsors.length > 0 ? [...sponsors, ...sponsors] : [];
-  const heroPosterUrl = typeof heroPosterSetting?.value === "string" && heroPosterSetting.value.trim()
-    ? heroPosterSetting.value
-    : "/assets/folder-noite-gamer.png";
+  const heroPosterUrl = readStringSetting(homeSettings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value, DEFAULT_HERO_POSTER_URL);
+  const carouselConfig = parseHomeCarouselConfig(homeSettings.find((setting) => setting.key === HOME_CAROUSEL_KEY)?.value);
+  const carouselEntries = [
+    ...sponsors.map((sponsor) => ({
+      id: `sponsor-${sponsor.id}`,
+      title: sponsor.name,
+      imageUrl: sponsor.carouselImageUrl || sponsor.logoUrl,
+      href: sponsor.websiteUrl ?? "/patrocinadores",
+      external: Boolean(sponsor.websiteUrl)
+    })),
+    ...carouselConfig.images
+      .filter((image) => image.isActive)
+      .map((image) => ({
+        id: `custom-${image.id}`,
+        title: image.title,
+        imageUrl: image.imageUrl,
+        href: image.linkUrl || "/patrocinadores",
+        external: image.linkUrl.startsWith("http")
+      }))
+  ];
+  const carouselItems = carouselEntries.length > 0 ? [...carouselEntries, ...carouselEntries] : [];
   return (
     <div className="scratched min-h-screen neon-page">
       <PublicHeader showBack={false} />
@@ -74,19 +93,19 @@ export default async function HomePage() {
             <p className="text-sm font-black uppercase text-[#B45CFF]">Quem fortalece a Noite Gamer</p>
             <h2 className="text-3xl font-black text-glow">Patrocinadores</h2>
           </div>
-          {carouselSponsors.length > 0 ? (
+          {carouselItems.length > 0 ? (
             <div className="sponsor-carousel">
-              <div className="sponsor-carousel-track">
-                {carouselSponsors.map((sponsor, index) => (
+              <div className="sponsor-carousel-track" style={{ "--carousel-duration": `${carouselConfig.speedSeconds}s` } as CSSProperties}>
+                {carouselItems.map((item, index) => (
                   <a
                     className="sponsor-carousel-card"
-                    href={sponsor.websiteUrl ?? "/patrocinadores"}
-                    key={`${sponsor.id}-${index}`}
-                    target={sponsor.websiteUrl ? "_blank" : undefined}
-                    rel={sponsor.websiteUrl ? "noreferrer" : undefined}
+                    href={item.href}
+                    key={`${item.id}-${index}`}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noreferrer" : undefined}
                   >
-                    <img src={sponsor.carouselImageUrl || sponsor.logoUrl} alt={sponsor.name} />
-                    <span>{sponsor.name}</span>
+                    <img src={item.imageUrl} alt={item.title} />
+                    <span>{item.title}</span>
                   </a>
                 ))}
               </div>
