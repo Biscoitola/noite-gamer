@@ -26,12 +26,11 @@ export default async function HomePage() {
             </p>
             <h1 className="mt-3 text-5xl font-black leading-none text-glow sm:text-7xl">A ARENA ESTA ABERTA</h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[#D4D4D4]">
-              Inscricoes online, Pix, check-in e chaveamento ao vivo em um painel competitivo com neon, ranking e telao.
+              Inscricoes online, Pix, check-in e chaveamento em um painel competitivo com neon, ranking e controle administrativo.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <ButtonLink href="/inscricao">Quero participar</ButtonLink>
               <ButtonLink href="/torneios" variant="ghost">Ver chaves</ButtonLink>
-              <ButtonLink href="/ao-vivo" variant="ghost">Telao ao vivo</ButtonLink>
             </div>
           </div>
           <div className="folder-showcase animate-float">

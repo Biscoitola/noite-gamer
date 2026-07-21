@@ -25,7 +25,6 @@ export function PublicHeader({ showBack = true }: { showBack?: boolean }) {
           <Link className="public-nav-cta" href="/inscricao">Inscricao</Link>
           <Link href="/minha-inscricao">Minha inscricao</Link>
           <Link href="/torneios">Torneios</Link>
-          <Link href="/ao-vivo">Ao vivo</Link>
           <Link href="/regulamento">Regulamento</Link>
           <Link href="/admin">Entrar (somente admin)</Link>
         </nav>
