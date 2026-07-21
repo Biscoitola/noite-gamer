@@ -12,7 +12,7 @@ export function RegistrationLookupForm() {
   return (
     <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
       <Panel>
-        <h2 className="text-2xl font-black text-[#F2B705]">Consultar inscricao</h2>
+        <h2 className="text-2xl font-black text-[#FFD400]">Consultar inscricao</h2>
         <p className="mt-2 text-sm text-[#D4D4D4]">
           Use o protocolo recebido no cadastro e o mesmo WhatsApp informado na inscricao.
         </p>
@@ -24,7 +24,7 @@ export function RegistrationLookupForm() {
             <input className={inputClass} name="whatsapp" inputMode="tel" placeholder="(54) 99999-9999" required />
           </Field>
           <button
-            className="focus-ring min-h-12 bg-[#F2B705] px-5 font-black uppercase text-black disabled:opacity-60"
+            className="focus-ring min-h-12 bg-[#FFD400] px-5 font-black uppercase text-black disabled:opacity-60"
             disabled={pending}
             type="submit"
           >
@@ -39,7 +39,7 @@ export function RegistrationLookupForm() {
           <div className="grid gap-4">
             <div>
               <p className="text-sm font-bold uppercase text-[#A3A3A3]">Protocolo</p>
-              <strong className="text-2xl text-[#F2B705]">{state.registration.protocol}</strong>
+              <strong className="text-2xl text-[#FFD400]">{state.registration.protocol}</strong>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Info label="Nome" value={state.registration.fullName} />
@@ -50,7 +50,7 @@ export function RegistrationLookupForm() {
               <Info label="Valor" value={`R$ ${state.registration.totalAmount}`} />
             </div>
             <div>
-              <h3 className="mb-3 text-lg font-black text-[#F2B705]">Jogos inscritos</h3>
+              <h3 className="mb-3 text-lg font-black text-[#FFD400]">Jogos inscritos</h3>
               <ul className="grid gap-2">
                 {state.registration.games.map((game) => (
                   <li key={game.name} className="flex items-center justify-between border border-[#B45CFF]/30 bg-black/30 px-3 py-2">

@@ -16,10 +16,10 @@ export default async function AdminRegistrationsPage() {
       <h1 className="text-3xl font-black">Inscricoes</h1>
       <Panel className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
-          <thead><tr className="text-[#F2B705]"><th>Protocolo</th><th>Participante</th><th>Contato</th><th>Jogos</th><th>Status</th><th>Valor</th></tr></thead>
+          <thead><tr className="text-[#FFD400]"><th>Protocolo</th><th>Participante</th><th>Contato</th><th>Jogos</th><th>Status</th><th>Valor</th></tr></thead>
           <tbody>
             {registrations.map((registration) => (
-              <tr key={registration.id} className="border-t border-[#F2B705]/20">
+              <tr key={registration.id} className="border-t border-[#FFD400]/20">
                 <td>{registration.protocol}</td>
                 <td>{registration.participant.publicName}</td>
                 <td>{registration.participant.whatsapp}</td>
@@ -31,7 +31,7 @@ export default async function AdminRegistrationsPage() {
           </tbody>
         </table>
       </Panel>
-      <Link className="text-[#F2B705]" href="/api/admin/export/registrations">Exportar CSV</Link>
+      <Link className="text-[#FFD400]" href="/api/admin/export/registrations">Exportar CSV</Link>
     </Container>
   );
 }

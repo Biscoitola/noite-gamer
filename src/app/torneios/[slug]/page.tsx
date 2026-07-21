@@ -78,7 +78,7 @@ export default async function TournamentSlugPage({ params }: { params: Promise<{
       <PublicHeader />
       <Container className="grid max-w-none gap-3 px-2 py-3 sm:px-4">
         <header className="mx-auto grid w-full max-w-6xl gap-1 text-center">
-          <p className="text-sm font-black uppercase text-[#F2B705]">NOITE GAMER - 2a EDICAO</p>
+          <p className="text-sm font-black uppercase text-[#FFD400]">NOITE GAMER - 2a EDICAO</p>
           <h1 className="text-2xl font-black uppercase text-glow sm:text-4xl">{tournament.game.name}</h1>
           <p className="text-sm uppercase text-[#A3A3A3]">Chaveamento mata-mata</p>
         </header>

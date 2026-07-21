@@ -1,7 +1,7 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createEditionAction, createGameAction, deleteGameAction, toggleGameStatusAction } from "./actions";
+import { createEditionAction, createGameAction, deleteGameAction, toggleGameStatusAction, updateGameAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export default async function SettingsPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Panel className="interactive-panel">
-          <h2 className="text-xl font-black text-[#F2B705]">Criar edicao</h2>
+          <h2 className="text-xl font-black text-[#FFD400]">Criar edicao</h2>
           <form action={createEditionAction} className="mt-4 grid gap-3">
             <Field label="Nome do evento"><input className={inputClass} name="name" required defaultValue="Noite Gamer" /></Field>
             <Field label="Edicao"><input className={inputClass} name="edition" required placeholder="Edicao 1, Copa HARP, Especial Ferias" /></Field>
@@ -50,7 +50,7 @@ export default async function SettingsPage() {
         </Panel>
 
         <Panel className="interactive-panel">
-          <h2 className="text-xl font-black text-[#F2B705]">Adicionar jogo</h2>
+          <h2 className="text-xl font-black text-[#FFD400]">Adicionar jogo</h2>
           <form action={createGameAction} className="mt-4 grid gap-3">
             <Field label="Edicao">
               <select className={inputClass} name="eventId" required>
@@ -67,7 +67,7 @@ export default async function SettingsPage() {
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
               <input name="isActive" type="checkbox" defaultChecked /> Ativar jogo
             </label>
-            <button className="focus-ring min-h-12 bg-[#F2B705] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(242,183,5,0.25)]">Salvar jogo</button>
+            <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">Salvar jogo</button>
           </form>
         </Panel>
       </section>
@@ -79,14 +79,14 @@ export default async function SettingsPage() {
             <article className="border border-[#B45CFF]/30 bg-black/25 p-4" key={event.id}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-black text-[#F2B705]">{event.name} - {event.edition}</h3>
+                  <h3 className="text-lg font-black text-[#FFD400]">{event.name} - {event.edition}</h3>
                   <p className="text-sm text-[#A3A3A3]">{event.venue} - {event.city}/{event.state} - {event.status}</p>
                 </div>
                 <strong className="text-sm text-[#B45CFF]">{event.games.length} jogos</strong>
               </div>
               <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {event.games.map((game) => (
-                  <li className="border border-[#F2B705]/25 bg-[#111111] p-3" key={game.id}>
+                  <li className="border border-[#FFD400]/25 bg-[#111111] p-3" key={game.id}>
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <strong>{game.name}</strong>
@@ -103,7 +103,7 @@ export default async function SettingsPage() {
                       <form action={toggleGameStatusAction}>
                         <input name="gameId" type="hidden" value={game.id} />
                         <input name="isActive" type="hidden" value={game.isActive ? "false" : "true"} />
-                        <button className="focus-ring min-h-10 w-full border border-[#B45CFF]/50 px-3 text-xs font-black uppercase text-[#F5F5F5] hover:border-[#F2B705] hover:text-[#F2B705]">
+                        <button className="focus-ring min-h-10 w-full border border-[#B45CFF]/50 px-3 text-xs font-black uppercase text-[#F5F5F5] hover:border-[#FFD400] hover:text-[#FFD400]">
                           {game.isActive ? "Desativar" : "Ativar"}
                         </button>
                       </form>
@@ -114,6 +114,35 @@ export default async function SettingsPage() {
                         </button>
                       </form>
                     </div>
+                    <details className="mt-3 border border-[#B45CFF]/25 bg-black/25 p-3">
+                      <summary className="cursor-pointer text-xs font-black uppercase text-[#FFD400]">Editar jogo</summary>
+                      <form action={updateGameAction} className="mt-3 grid gap-3">
+                        <input name="gameId" type="hidden" value={game.id} />
+                        <Field label="Nome do jogo">
+                          <input className={inputClass} name="name" required defaultValue={game.name} />
+                        </Field>
+                        <Field label="Slug publico">
+                          <input className={inputClass} name="slug" defaultValue={game.slug} />
+                        </Field>
+                        <Field label="Descricao">
+                          <textarea className={inputClass} name="description" rows={3} defaultValue={game.description} />
+                        </Field>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Field label="Preco">
+                            <input className={inputClass} name="price" min="0" step="0.01" type="number" defaultValue={Number(game.price).toFixed(2)} />
+                          </Field>
+                          <Field label="Vagas">
+                            <input className={inputClass} name="capacity" min="2" type="number" defaultValue={game.capacity} />
+                          </Field>
+                        </div>
+                        <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                          <input name="isActive" type="checkbox" defaultChecked={game.isActive} /> Jogo ativo
+                        </label>
+                        <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                          Salvar alteracoes
+                        </button>
+                      </form>
+                    </details>
                   </li>
                 ))}
               </ul>

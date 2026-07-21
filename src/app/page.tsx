@@ -21,7 +21,7 @@ export default async function HomePage() {
         <section className="hero-grid grid min-h-[76vh] items-center gap-8 py-8 lg:grid-cols-[1fr_430px]">
           <div className="max-w-3xl animate-rise">
             <EventLogo />
-            <p className="mt-8 text-sm font-bold uppercase text-[#F2B705]">
+            <p className="mt-8 text-sm font-bold uppercase text-[#FFD400]">
               {activeEvent ? `${activeEvent.edition} - ${activeEvent.venue} - ${activeEvent.city}/${activeEvent.state}` : "Edicao configuravel - HARP - Tapejara/RS"}
             </p>
             <h1 className="mt-3 text-5xl font-black leading-none text-glow sm:text-7xl">A ARENA ESTA ABERTA</h1>
@@ -48,7 +48,7 @@ export default async function HomePage() {
         <section className="grid gap-4 sm:grid-cols-3">
           {games.length > 0 ? games.map((game) => (
             <Panel className="interactive-panel" key={game.id}>
-              <h2 className="text-xl font-black text-[#F2B705]">{game.name}</h2>
+              <h2 className="text-xl font-black text-[#FFD400]">{game.name}</h2>
               <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
                 {game.description}
               </p>
@@ -56,7 +56,7 @@ export default async function HomePage() {
             </Panel>
           )) : (
             <Panel className="sm:col-span-3">
-              <h2 className="text-xl font-black text-[#F2B705]">Configure sua primeira edicao</h2>
+              <h2 className="text-xl font-black text-[#FFD400]">Configure sua primeira edicao</h2>
               <p className="mt-2 text-[#A3A3A3]">Entre no admin e crie edicoes e jogos para liberar as inscricoes.</p>
             </Panel>
           )}

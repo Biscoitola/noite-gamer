@@ -18,10 +18,10 @@ export default async function AdminPage() {
     <Container className="grid gap-5">
       <h1 className="text-3xl font-black">Dashboard</h1>
       <section className="grid gap-3 sm:grid-cols-4">
-        <Panel><span>Total</span><strong className="block text-3xl text-[#F2B705]">{total}</strong></Panel>
-        <Panel><span>Aguardando</span><strong className="block text-3xl text-[#F2B705]">{pending}</strong></Panel>
-        <Panel><span>Confirmadas</span><strong className="block text-3xl text-[#F2B705]">{confirmed}</strong></Panel>
-        <Panel><span>Receita</span><strong className="block text-3xl text-[#F2B705]">R$ {Number(paid._sum.amount ?? 0).toFixed(2)}</strong></Panel>
+        <Panel><span>Total</span><strong className="block text-3xl text-[#FFD400]">{total}</strong></Panel>
+        <Panel><span>Aguardando</span><strong className="block text-3xl text-[#FFD400]">{pending}</strong></Panel>
+        <Panel><span>Confirmadas</span><strong className="block text-3xl text-[#FFD400]">{confirmed}</strong></Panel>
+        <Panel><span>Receita</span><strong className="block text-3xl text-[#FFD400]">R$ {Number(paid._sum.amount ?? 0).toFixed(2)}</strong></Panel>
       </section>
       <Panel>
         <h2 className="text-xl font-black">Vagas por modalidade</h2>

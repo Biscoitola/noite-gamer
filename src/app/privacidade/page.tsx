@@ -135,7 +135,7 @@ export default function PrivacyPage() {
 function PrivacySection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <Panel className="interactive-panel privacy-copy">
-      <h2 className="text-xl font-black text-[#F2B705]">{title}</h2>
+      <h2 className="text-xl font-black text-[#FFD400]">{title}</h2>
       <div className="mt-3 grid gap-3 leading-7 text-[#D4D4D4]">{children}</div>
     </Panel>
   );

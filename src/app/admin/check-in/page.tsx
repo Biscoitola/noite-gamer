@@ -70,24 +70,24 @@ export default async function CheckInPage({
       </Panel>
 
       <section className="grid gap-3 sm:grid-cols-3">
-        <Panel><span className="text-sm text-[#A3A3A3]">Listados</span><strong className="block text-3xl text-[#F2B705]">{items.length}</strong></Panel>
-        <Panel><span className="text-sm text-[#A3A3A3]">Presentes</span><strong className="block text-3xl text-[#F2B705]">{presentCount}</strong></Panel>
-        <Panel><span className="text-sm text-[#A3A3A3]">Ausentes</span><strong className="block text-3xl text-[#F2B705]">{items.length - presentCount}</strong></Panel>
+        <Panel><span className="text-sm text-[#A3A3A3]">Listados</span><strong className="block text-3xl text-[#FFD400]">{items.length}</strong></Panel>
+        <Panel><span className="text-sm text-[#A3A3A3]">Presentes</span><strong className="block text-3xl text-[#FFD400]">{presentCount}</strong></Panel>
+        <Panel><span className="text-sm text-[#A3A3A3]">Ausentes</span><strong className="block text-3xl text-[#FFD400]">{items.length - presentCount}</strong></Panel>
       </section>
 
       <Panel className="grid gap-3">
-        <h2 className="text-xl font-black text-[#F2B705]">Participantes confirmados</h2>
+        <h2 className="text-xl font-black text-[#FFD400]">Participantes confirmados</h2>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => {
             const present = item.checkIns.some((checkIn) => !checkIn.canceledAt);
             return (
-              <article className={`grid gap-3 border p-3 ${present ? "border-[#F2B705] bg-[#F2B705]/10" : "border-[#B45CFF]/35 bg-black/30"}`} key={item.id}>
+              <article className={`grid gap-3 border p-3 ${present ? "border-[#FFD400] bg-[#FFD400]/10" : "border-[#B45CFF]/35 bg-black/30"}`} key={item.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-black">{item.registration.participant.publicName}</h3>
                     <p className="text-sm text-[#A3A3A3]">{item.registration.participant.fullName}</p>
                   </div>
-                  <span className={`text-xs font-black uppercase ${present ? "text-[#F2B705]" : "text-[#B45CFF]"}`}>
+                  <span className={`text-xs font-black uppercase ${present ? "text-[#FFD400]" : "text-[#B45CFF]"}`}>
                     {present ? "Presente" : "Ausente"}
                   </span>
                 </div>
@@ -100,14 +100,14 @@ export default async function CheckInPage({
                 {present ? (
                   <form action={undoCheckInAction}>
                     <input type="hidden" name="registrationItemId" value={item.id} />
-                    <button className="min-h-11 w-full border border-[#B45CFF] px-3 font-black uppercase text-[#F5F5F5] hover:border-[#F2B705] hover:text-[#F2B705]">
+                    <button className="min-h-11 w-full border border-[#B45CFF] px-3 font-black uppercase text-[#F5F5F5] hover:border-[#FFD400] hover:text-[#FFD400]">
                       Desfazer check-in
                     </button>
                   </form>
                 ) : (
                   <form action={checkInAction}>
                     <input type="hidden" name="registrationItemId" value={item.id} />
-                    <button className="min-h-11 w-full bg-[#F2B705] px-3 font-black uppercase text-black">
+                    <button className="min-h-11 w-full bg-[#FFD400] px-3 font-black uppercase text-black">
                       Fazer check-in
                     </button>
                   </form>

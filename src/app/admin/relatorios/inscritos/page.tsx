@@ -95,7 +95,7 @@ export default async function RegisteredByGameReportPage({
       </Panel>
 
       <section className="print-report grid gap-4">
-        <header className="border-b border-[#F2B705]/35 pb-4">
+        <header className="border-b border-[#FFD400]/35 pb-4">
           <p className="text-sm font-black uppercase text-[#B45CFF]">Noite Gamer</p>
           <h2 className="text-2xl font-black">{selectedGame ? `${selectedGame.event.edition} - ${selectedGame.name}` : "Relatorio"}</h2>
           <p className="text-sm text-[#A3A3A3]">Gerado em {new Date().toLocaleString("pt-BR")}</p>
@@ -112,7 +112,7 @@ export default async function RegisteredByGameReportPage({
         <Panel className="overflow-x-auto print-table-panel">
           <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-[#F2B705]/40 text-[#F2B705]">
+              <tr className="border-b border-[#FFD400]/40 text-[#FFD400]">
                 <th className="py-2">#</th>
                 <th>Nome</th>
                 <th>Nick</th>
@@ -134,7 +134,7 @@ export default async function RegisteredByGameReportPage({
                   <tr className="border-b border-[#B45CFF]/20" key={item.id}>
                     <td className="py-2">{index + 1}</td>
                     <td>{item.registration.participant.fullName}</td>
-                    <td className="font-black text-[#F2B705]">{item.registration.participant.publicName}</td>
+                    <td className="font-black text-[#FFD400]">{item.registration.participant.publicName}</td>
                     <td>{item.registration.participant.whatsapp}</td>
                     <td>{item.registration.participant.email ?? "-"}</td>
                     <td>{item.registration.participant.city}</td>
@@ -158,7 +158,7 @@ function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="border border-[#B45CFF]/35 bg-[#111111] p-3">
       <span className="text-xs font-black uppercase text-[#A3A3A3]">{label}</span>
-      <strong className="block text-2xl text-[#F2B705]">{value}</strong>
+      <strong className="block text-2xl text-[#FFD400]">{value}</strong>
     </div>
   );
 }

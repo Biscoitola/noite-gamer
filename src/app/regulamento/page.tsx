@@ -93,7 +93,7 @@ export default function RulesPage() {
 function RulesSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <Panel className="interactive-panel">
-      <h2 className="text-xl font-black text-[#F2B705]">{title}</h2>
+      <h2 className="text-xl font-black text-[#FFD400]">{title}</h2>
       <ul className="mt-3 grid gap-2 text-[#D4D4D4]">{children}</ul>
     </Panel>
   );

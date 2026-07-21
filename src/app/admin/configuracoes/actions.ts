@@ -59,6 +59,28 @@ export async function createGameAction(formData: FormData) {
   revalidatePath("/inscricao");
 }
 
+export async function updateGameAction(formData: FormData) {
+  await requireAdmin();
+  const gameId = String(formData.get("gameId") || "");
+  const name = String(formData.get("name") || "").trim();
+  const rawSlug = String(formData.get("slug") || "").trim();
+  if (!gameId || !name) throw new Error("Jogo invalido.");
+
+  await prisma.game.update({
+    where: { id: gameId },
+    data: {
+      name,
+      slug: slugify(rawSlug || name),
+      description: String(formData.get("description") || `${name} na Noite Gamer`),
+      price: Number(formData.get("price") || 0),
+      capacity: Number(formData.get("capacity") || 16),
+      isActive: formData.get("isActive") === "on"
+    }
+  });
+
+  revalidateGamePages();
+}
+
 export async function toggleGameStatusAction(formData: FormData) {
   await requireAdmin();
   const gameId = String(formData.get("gameId") || "");

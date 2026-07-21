@@ -16,7 +16,7 @@ export default async function RegistrationStatusPage({ params }: { params: Promi
       <h1 className="text-3xl font-black">Sua inscricao</h1>
       <Panel>
         <p className="text-[#A3A3A3]">Protocolo</p>
-        <strong className="text-2xl text-[#F2B705]">{registration.protocol}</strong>
+        <strong className="text-2xl text-[#FFD400]">{registration.protocol}</strong>
         <p className="mt-4">Nome publico: {registration.participant.publicName}</p>
         <p>Status: {registration.status}</p>
         <ul className="mt-4 grid gap-2">

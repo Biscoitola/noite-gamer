@@ -16,9 +16,9 @@ export default async function TournamentsPage() {
           {tournaments.map((tournament) => (
           <Link className="group block cursor-pointer" key={tournament.id} href={`/torneios/${tournament.game.slug}`}>
             <Panel className="interactive-panel grid min-h-36 content-between gap-4">
-              <h2 className="text-xl font-black text-[#F2B705]">{tournament.game.name}</h2>
+              <h2 className="text-xl font-black text-[#FFD400]">{tournament.game.name}</h2>
               <p className="text-sm font-black uppercase text-[#B45CFF]">{tournament.status}</p>
-              <span className="inline-flex min-h-10 w-fit items-center border border-[#F2B705] px-3 text-xs font-black uppercase text-[#F2B705] transition group-hover:bg-[#F2B705] group-hover:text-black">
+              <span className="inline-flex min-h-10 w-fit items-center border border-[#FFD400] px-3 text-xs font-black uppercase text-[#FFD400] transition group-hover:bg-[#FFD400] group-hover:text-black">
                 Abrir chave
               </span>
             </Panel>

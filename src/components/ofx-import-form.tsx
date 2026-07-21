@@ -22,7 +22,7 @@ export function OfxImportForm() {
           Importar PDF do banco
           <input className="min-h-12 border border-[#B45CFF]/35 bg-black px-3 py-2" name="pdfFile" type="file" accept=".pdf,.PDF,application/pdf" required />
         </label>
-        <button className="mt-7 min-h-12 bg-[#F2B705] px-4 font-black uppercase text-black disabled:opacity-50" disabled={pending}>
+        <button className="mt-7 min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black disabled:opacity-50" disabled={pending}>
           {pending ? "Processando..." : "Conciliar PDF"}
         </button>
       </form>
@@ -31,7 +31,7 @@ export function OfxImportForm() {
         <div className="grid gap-2 border border-[#B45CFF]/35 bg-black/25 p-3 text-sm">
           <p>Transacoes novas: <strong>{state.imported}</strong></p>
           <p>Ignoradas por duplicidade: <strong>{state.duplicates}</strong></p>
-          <p>Inscricoes confirmadas: <strong className="text-[#F2B705]">{state.confirmed}</strong></p>
+          <p>Inscricoes confirmadas: <strong className="text-[#FFD400]">{state.confirmed}</strong></p>
           {state.unmatched.length > 0 ? (
             <details>
               <summary className="cursor-pointer font-black text-[#B45CFF]">Ver transacoes sem match ({state.unmatched.length})</summary>
