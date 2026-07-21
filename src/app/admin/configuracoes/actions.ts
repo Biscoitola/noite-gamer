@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
@@ -126,7 +127,7 @@ export async function updateHomeHeroPosterAction(formData: FormData) {
   await requireAdmin();
   const imageUrl = String(formData.get("imageUrl") || "").trim();
   if (imageUrl && !isAllowedImageSource(imageUrl)) {
-    throw new Error("Use uma URL completa https:// ou um caminho interno que comece com /.");
+    redirectWithConfigMessage("error", "Use uma URL publica https:// ou um caminho interno iniciado com /.");
   }
 
   await prisma.systemSetting.upsert({
@@ -137,6 +138,7 @@ export async function updateHomeHeroPosterAction(formData: FormData) {
 
   revalidatePath("/admin/configuracoes");
   revalidatePath("/");
+  redirectWithConfigMessage("success", "Imagem principal atualizada.");
 }
 
 export async function updateHomeCarouselSettingsAction(formData: FormData) {
@@ -144,6 +146,7 @@ export async function updateHomeCarouselSettingsAction(formData: FormData) {
   const config = await getHomeCarouselConfig();
   config.speedSeconds = Number(formData.get("speedSeconds") || DEFAULT_HOME_CAROUSEL_CONFIG.speedSeconds);
   await saveHomeCarouselConfig(config);
+  redirectWithConfigMessage("success", "Configuracao do carrossel atualizada.");
 }
 
 export async function createHomeCarouselImageAction(formData: FormData) {
@@ -151,9 +154,15 @@ export async function createHomeCarouselImageAction(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const imageUrl = String(formData.get("imageUrl") || "").trim();
   const linkUrl = String(formData.get("linkUrl") || "").trim();
-  if (!title || !imageUrl) throw new Error("Informe titulo e URL da imagem.");
-  if (!isAllowedImageSource(imageUrl)) throw new Error("Use uma URL de imagem https:// ou caminho interno iniciado com /.");
-  if (!isAllowedOptionalLink(linkUrl)) throw new Error("Use um link https://, http://, caminho interno iniciado com / ou deixe vazio.");
+  if (!title || !imageUrl) {
+    redirectWithConfigMessage("error", "Informe titulo e URL da imagem do carrossel.");
+  }
+  if (!isAllowedImageSource(imageUrl)) {
+    redirectWithConfigMessage("error", "Cole uma URL publica https:// da imagem. Arquivo local ou imagem copiada nao funciona em producao.");
+  }
+  if (!isAllowedOptionalLink(linkUrl)) {
+    redirectWithConfigMessage("error", "O link deve ser https://, http://, um caminho iniciado com / ou ficar vazio.");
+  }
 
   const config = await getHomeCarouselConfig();
   config.images.push({
@@ -165,6 +174,7 @@ export async function createHomeCarouselImageAction(formData: FormData) {
     isActive: formData.get("isActive") === "on"
   });
   await saveHomeCarouselConfig(config);
+  redirectWithConfigMessage("success", "Imagem adicionada ao carrossel.");
 }
 
 export async function updateHomeCarouselImageAction(formData: FormData) {
@@ -173,9 +183,15 @@ export async function updateHomeCarouselImageAction(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const imageUrl = String(formData.get("imageUrl") || "").trim();
   const linkUrl = String(formData.get("linkUrl") || "").trim();
-  if (!imageId || !title || !imageUrl) throw new Error("Imagem do carrossel invalida.");
-  if (!isAllowedImageSource(imageUrl)) throw new Error("Use uma URL de imagem https:// ou caminho interno iniciado com /.");
-  if (!isAllowedOptionalLink(linkUrl)) throw new Error("Use um link https://, http://, caminho interno iniciado com / ou deixe vazio.");
+  if (!imageId || !title || !imageUrl) {
+    redirectWithConfigMessage("error", "Imagem do carrossel invalida.");
+  }
+  if (!isAllowedImageSource(imageUrl)) {
+    redirectWithConfigMessage("error", "Cole uma URL publica https:// da imagem. Arquivo local ou imagem copiada nao funciona em producao.");
+  }
+  if (!isAllowedOptionalLink(linkUrl)) {
+    redirectWithConfigMessage("error", "O link deve ser https://, http://, um caminho iniciado com / ou ficar vazio.");
+  }
 
   const config = await getHomeCarouselConfig();
   config.images = config.images.map((image) => image.id === imageId
@@ -189,6 +205,7 @@ export async function updateHomeCarouselImageAction(formData: FormData) {
       }
     : image);
   await saveHomeCarouselConfig(config);
+  redirectWithConfigMessage("success", "Imagem do carrossel atualizada.");
 }
 
 export async function deleteHomeCarouselImageAction(formData: FormData) {
@@ -197,6 +214,7 @@ export async function deleteHomeCarouselImageAction(formData: FormData) {
   const config = await getHomeCarouselConfig();
   config.images = config.images.filter((image) => image.id !== imageId);
   await saveHomeCarouselConfig(config);
+  redirectWithConfigMessage("success", "Imagem removida do carrossel.");
 }
 
 function slugify(value: string) {
@@ -250,4 +268,8 @@ async function saveHomeCarouselConfig(config: Awaited<ReturnType<typeof getHomeC
   });
   revalidatePath("/admin/configuracoes");
   revalidatePath("/");
+}
+
+function redirectWithConfigMessage(type: "success" | "error", message: string): never {
+  redirect(`/admin/configuracoes?${type}=${encodeURIComponent(message)}`);
 }

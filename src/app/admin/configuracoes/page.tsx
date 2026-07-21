@@ -17,8 +17,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
+  const params = await searchParams;
+  const successMessage = readSearchParam(params?.success);
+  const errorMessage = readSearchParam(params?.error);
   const events = await prisma.event.findMany({
     orderBy: { startsAt: "desc" },
     include: { games: { orderBy: { name: "asc" }, include: { _count: { select: { items: true, tournaments: true } } } } }
@@ -32,6 +35,16 @@ export default async function SettingsPage() {
         <p className="text-sm font-black uppercase text-[#B45CFF]">Conteudo editavel</p>
         <h1 className="text-3xl font-black text-glow">Edicoes e jogos</h1>
       </div>
+      {successMessage ? (
+        <div className="border border-emerald-400/40 bg-emerald-400/10 p-3 text-sm font-black text-emerald-100">
+          {successMessage}
+        </div>
+      ) : null}
+      {errorMessage ? (
+        <div className="border border-red-400/45 bg-red-500/10 p-3 text-sm font-black text-red-100">
+          {errorMessage}
+        </div>
+      ) : null}
 
       <Panel className="interactive-panel">
         <div className="grid gap-4 lg:grid-cols-[1fr_240px] lg:items-start">
@@ -50,7 +63,7 @@ export default async function SettingsPage() {
                 />
               </Field>
               <p className="text-xs text-[#A3A3A3]">
-                Para voltar ao padrao, salve vazio ou use /assets/folder-noite-gamer.png.
+                Para voltar ao padrao, salve vazio ou use /assets/folder-noite-gamer.png. Nao cole arquivo do computador ou imagem copiada; precisa ser link publico.
               </p>
               <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">
                 Salvar imagem da home
@@ -85,6 +98,9 @@ export default async function SettingsPage() {
             <Field label="URL da imagem"><input className={inputClass} name="imageUrl" required placeholder="https://..." /></Field>
             <Field label="Link ao clicar"><input className={inputClass} name="linkUrl" placeholder="/patrocinadores ou https://..." /></Field>
             <Field label="Ordem"><input className={inputClass} name="order" type="number" defaultValue="0" /></Field>
+            <p className="text-xs text-[#A3A3A3]">
+              Use uma URL publica da imagem. Arquivos locais como C:\... ou imagens coladas/base64 nao abrem para outras pessoas.
+            </p>
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
               <input name="isActive" type="checkbox" defaultChecked /> Mostrar no carrossel
             </label>
@@ -264,4 +280,8 @@ export default async function SettingsPage() {
       </Panel>
     </Container>
   );
+}
+
+function readSearchParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
 }
