@@ -12,6 +12,12 @@ export default async function HomePage() {
       include: { sponsors: { where: { isActive: true, showInCarousel: true }, orderBy: [{ carouselOrder: "asc" }, { createdAt: "desc" }] } }
     })
     .catch(() => []);
+  const games = await prisma.game
+    .findMany({
+      where: { isActive: true, event: { status: "ACTIVE" } },
+      orderBy: { name: "asc" }
+    })
+    .catch(() => []);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
   const sponsors = activeEvent?.sponsors ?? [];
   const carouselSponsors = sponsors.length > 0 ? [...sponsors, ...sponsors] : [];
@@ -45,7 +51,23 @@ export default async function HomePage() {
             />
           </div>
         </section>
-        <section className="grid gap-4">
+        <section className="grid gap-4 sm:grid-cols-3">
+          {games.length > 0 ? games.map((game) => (
+            <Panel className="interactive-panel" key={game.id}>
+              <h2 className="text-xl font-black text-[#FFD400]">{game.name}</h2>
+              <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
+                {game.description}
+              </p>
+              <p className="mt-3 text-sm font-black text-[#B45CFF]">R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas</p>
+            </Panel>
+          )) : (
+            <Panel className="sm:col-span-3">
+              <h2 className="text-xl font-black text-[#FFD400]">Configure sua primeira edicao</h2>
+              <p className="mt-2 text-[#A3A3A3]">Entre no admin e crie edicoes e jogos para liberar as inscricoes.</p>
+            </Panel>
+          )}
+        </section>
+        <section className="grid gap-4 pb-12">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Quem fortalece a Noite Gamer</p>
             <h2 className="text-3xl font-black text-glow">Patrocinadores</h2>
@@ -73,16 +95,6 @@ export default async function HomePage() {
               <p className="mt-2 text-[#A3A3A3]">Cadastre patrocinadores no admin e marque a opcao de carrossel para aparecerem aqui.</p>
             </Panel>
           )}
-        </section>
-        <section className="grid gap-4 pb-12 sm:grid-cols-2">
-          <Panel className="interactive-panel">
-            <h2 className="text-2xl font-black">Edicoes livres</h2>
-            <p className="mt-2 text-[#D4D4D4]">Voce pode criar Edicao 1, Edicao 2 ou qualquer outro evento, cada um com jogos proprios.</p>
-          </Panel>
-          <Panel className="interactive-panel">
-            <h2 className="text-2xl font-black">Fluxo seguro e visual</h2>
-            <p className="mt-2 text-[#D4D4D4]">A inscricao so vira confirmada apos conferencia do Pix. Participantes nao precisam criar conta.</p>
-          </Panel>
         </section>
       </Container>
     </div>
