@@ -9,11 +9,12 @@ export default async function HomePage() {
   const events = await prisma.event
     .findMany({
       orderBy: { startsAt: "desc" },
-      include: { games: { where: { isActive: true }, orderBy: { name: "asc" } } }
+      include: { sponsors: { where: { isActive: true, showInCarousel: true }, orderBy: [{ carouselOrder: "asc" }, { createdAt: "desc" }] } }
     })
     .catch(() => []);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
-  const games = activeEvent?.games ?? [];
+  const sponsors = activeEvent?.sponsors ?? [];
+  const carouselSponsors = sponsors.length > 0 ? [...sponsors, ...sponsors] : [];
   return (
     <div className="scratched min-h-screen neon-page">
       <PublicHeader showBack={false} />
@@ -44,19 +45,32 @@ export default async function HomePage() {
             />
           </div>
         </section>
-        <section className="grid gap-4 sm:grid-cols-3">
-          {games.length > 0 ? games.map((game) => (
-            <Panel className="interactive-panel" key={game.id}>
-              <h2 className="text-xl font-black text-[#FFD400]">{game.name}</h2>
-              <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
-                {game.description}
-              </p>
-              <p className="mt-3 text-sm font-black text-[#B45CFF]">R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas</p>
-            </Panel>
-          )) : (
-            <Panel className="sm:col-span-3">
-              <h2 className="text-xl font-black text-[#FFD400]">Configure sua primeira edicao</h2>
-              <p className="mt-2 text-[#A3A3A3]">Entre no admin e crie edicoes e jogos para liberar as inscricoes.</p>
+        <section className="grid gap-4">
+          <div>
+            <p className="text-sm font-black uppercase text-[#B45CFF]">Quem fortalece a Noite Gamer</p>
+            <h2 className="text-3xl font-black text-glow">Patrocinadores</h2>
+          </div>
+          {carouselSponsors.length > 0 ? (
+            <div className="sponsor-carousel">
+              <div className="sponsor-carousel-track">
+                {carouselSponsors.map((sponsor, index) => (
+                  <a
+                    className="sponsor-carousel-card"
+                    href={sponsor.websiteUrl ?? "/patrocinadores"}
+                    key={`${sponsor.id}-${index}`}
+                    target={sponsor.websiteUrl ? "_blank" : undefined}
+                    rel={sponsor.websiteUrl ? "noreferrer" : undefined}
+                  >
+                    <img src={sponsor.carouselImageUrl || sponsor.logoUrl} alt={sponsor.name} />
+                    <span>{sponsor.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <Panel>
+              <h2 className="text-xl font-black text-[#FFD400]">Patrocinadores em breve</h2>
+              <p className="mt-2 text-[#A3A3A3]">Cadastre patrocinadores no admin e marque a opcao de carrossel para aparecerem aqui.</p>
             </Panel>
           )}
         </section>

@@ -1,7 +1,7 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { clearPrizeWinnerAction, createPrizeAction, createSponsorAction, drawPrizeAction } from "./actions";
+import { clearPrizeWinnerAction, createPrizeAction, createSponsorAction, drawPrizeAction, updateSponsorCarouselAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +37,13 @@ export default async function AdminSponsorsPage() {
             </Field>
             <Field label="Nome"><input className={inputClass} name="name" required /></Field>
             <Field label="URL da logo"><input className={inputClass} name="logoUrl" required placeholder="https://..." /></Field>
+            <Field label="Imagem do carrossel da home"><input className={inputClass} name="carouselImageUrl" placeholder="https://..." /></Field>
+            <Field label="Ordem no carrossel"><input className={inputClass} name="carouselOrder" type="number" defaultValue="0" /></Field>
             <Field label="Site ou Instagram"><input className={inputClass} name="websiteUrl" placeholder="https://..." /></Field>
             <Field label="Descricao"><textarea className={inputClass} name="description" rows={3} /></Field>
+            <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+              <input name="showInCarousel" type="checkbox" defaultChecked /> Mostrar no carrossel da home
+            </label>
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
               <input name="isActive" type="checkbox" defaultChecked /> Mostrar no site
             </label>
@@ -76,8 +81,33 @@ export default async function AdminSponsorsPage() {
                 <div>
                   <h3 className="text-lg font-black text-[#FFD400]">{sponsor.name}</h3>
                   <p className="text-sm text-[#A3A3A3]">{sponsor.event.edition} - {sponsor.isActive ? "visivel" : "oculto"}</p>
+                  <p className="text-xs uppercase text-[#B45CFF]">
+                    Carrossel: {sponsor.showInCarousel ? "sim" : "nao"} | ordem {sponsor.carouselOrder}
+                  </p>
                 </div>
               </div>
+              <form action={updateSponsorCarouselAction} className="mt-4 grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
+                <input name="sponsorId" type="hidden" value={sponsor.id} />
+                <p className="text-xs font-black uppercase text-[#FFD400]">Configurar carrossel da home</p>
+                <Field label="URL da logo">
+                  <input className={inputClass} name="logoUrl" required defaultValue={sponsor.logoUrl} />
+                </Field>
+                <Field label="Imagem do carrossel">
+                  <input className={inputClass} name="carouselImageUrl" defaultValue={sponsor.carouselImageUrl ?? ""} placeholder="https://..." />
+                </Field>
+                <Field label="Ordem">
+                  <input className={inputClass} name="carouselOrder" type="number" defaultValue={sponsor.carouselOrder} />
+                </Field>
+                <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                  <input name="showInCarousel" type="checkbox" defaultChecked={sponsor.showInCarousel} /> Mostrar no carrossel
+                </label>
+                <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                  <input name="isActive" type="checkbox" defaultChecked={sponsor.isActive} /> Patrocinador ativo
+                </label>
+                <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                  Salvar carrossel
+                </button>
+              </form>
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 {sponsor.prizes.map((prize) => (
                   <div className="grid gap-3 border border-[#FFD400]/25 bg-[#111111] p-3" key={prize.id}>

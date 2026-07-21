@@ -19,6 +19,25 @@ export async function createSponsorAction(formData: FormData) {
       logoUrl,
       description: String(formData.get("description") || "Patrocinador da Noite Gamer."),
       websiteUrl: String(formData.get("websiteUrl") || "").trim() || null,
+      carouselImageUrl: String(formData.get("carouselImageUrl") || "").trim() || null,
+      showInCarousel: formData.get("showInCarousel") === "on",
+      carouselOrder: Number(formData.get("carouselOrder") || 0),
+      isActive: formData.get("isActive") === "on"
+    }
+  });
+  revalidateSponsorPages();
+}
+
+export async function updateSponsorCarouselAction(formData: FormData) {
+  await requireAdmin();
+  const sponsorId = String(formData.get("sponsorId") || "");
+  await prisma.sponsor.update({
+    where: { id: sponsorId },
+    data: {
+      logoUrl: String(formData.get("logoUrl") || "").trim(),
+      carouselImageUrl: String(formData.get("carouselImageUrl") || "").trim() || null,
+      showInCarousel: formData.get("showInCarousel") === "on",
+      carouselOrder: Number(formData.get("carouselOrder") || 0),
       isActive: formData.get("isActive") === "on"
     }
   });

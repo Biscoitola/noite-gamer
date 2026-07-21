@@ -182,19 +182,23 @@ model Registration {
 }
 
 model Sponsor {
-  id          String   @id @default(cuid())
-  eventId     String
-  name        String
-  description String
-  logoUrl     String
-  websiteUrl  String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  prizes      Prize[]
+  id               String   @id @default(cuid())
+  eventId          String
+  name             String
+  description      String
+  logoUrl          String
+  websiteUrl       String?
+  carouselImageUrl String?
+  showInCarousel   Boolean  @default(false)
+  carouselOrder    Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  prizes           Prize[]
 
   @@index([eventId, isActive])
+  @@index([showInCarousel, carouselOrder])
 }
 
 model Prize {

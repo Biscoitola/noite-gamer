@@ -301,6 +301,62 @@ a {
   object-fit: contain;
 }
 
+.sponsor-carousel {
+  overflow: hidden;
+  border: 1px solid rgba(180, 92, 255, 0.35);
+  background: rgba(17, 17, 17, 0.86);
+  padding: 14px;
+  box-shadow: inset 0 0 34px rgba(180, 92, 255, 0.12), 0 0 24px rgba(255, 212, 0, 0.08);
+}
+
+.sponsor-carousel-track {
+  display: flex;
+  width: max-content;
+  gap: 14px;
+  animation: sponsor-marquee 28s linear infinite;
+}
+
+.sponsor-carousel:hover .sponsor-carousel-track {
+  animation-play-state: paused;
+}
+
+.sponsor-carousel-card {
+  display: grid;
+  width: 220px;
+  min-height: 150px;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 212, 0, 0.38);
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0.96), rgba(27, 11, 46, 0.88));
+  padding: 12px;
+  text-align: center;
+}
+
+.sponsor-carousel-card img {
+  width: 100%;
+  height: 92px;
+  object-fit: contain;
+  background: rgba(245, 245, 245, 0.96);
+  padding: 8px;
+}
+
+.sponsor-carousel-card span {
+  color: #ffd400;
+  font-size: 0.85rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+@keyframes sponsor-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .neon-logo-card span {
   display: grid;
   width: 132px;
