@@ -59,6 +59,37 @@ export async function createGameAction(formData: FormData) {
   revalidatePath("/inscricao");
 }
 
+export async function toggleGameStatusAction(formData: FormData) {
+  await requireAdmin();
+  const gameId = String(formData.get("gameId") || "");
+  const isActive = formData.get("isActive") === "true";
+  await prisma.game.update({
+    where: { id: gameId },
+    data: { isActive }
+  });
+  revalidateGamePages();
+}
+
+export async function deleteGameAction(formData: FormData) {
+  await requireAdmin();
+  const gameId = String(formData.get("gameId") || "");
+  const [registrationItems, tournaments] = await Promise.all([
+    prisma.registrationItem.count({ where: { gameId } }),
+    prisma.tournament.count({ where: { gameId } })
+  ]);
+
+  if (registrationItems > 0 || tournaments > 0) {
+    await prisma.game.update({
+      where: { id: gameId },
+      data: { isActive: false }
+    });
+  } else {
+    await prisma.game.delete({ where: { id: gameId } });
+  }
+
+  revalidateGamePages();
+}
+
 function slugify(value: string) {
   return value
     .normalize("NFD")
@@ -66,6 +97,16 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function revalidateGamePages() {
+  revalidatePath("/admin/configuracoes");
+  revalidatePath("/admin/check-in");
+  revalidatePath("/admin/torneios");
+  revalidatePath("/admin/relatorios/inscritos");
+  revalidatePath("/");
+  revalidatePath("/inscricao");
+  revalidatePath("/torneios");
 }
 
 function buildLocalDateTime(

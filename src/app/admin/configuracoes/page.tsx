@@ -1,7 +1,7 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { createEditionAction, createGameAction } from "./actions";
+import { createEditionAction, createGameAction, deleteGameAction, toggleGameStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   await requireAdmin();
   const events = await prisma.event.findMany({
     orderBy: { startsAt: "desc" },
-    include: { games: { orderBy: { name: "asc" } } }
+    include: { games: { orderBy: { name: "asc" }, include: { _count: { select: { items: true, tournaments: true } } } } }
   });
   return (
     <Container className="grid gap-5">
@@ -87,8 +87,33 @@ export default async function SettingsPage() {
               <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {event.games.map((game) => (
                   <li className="border border-[#F2B705]/25 bg-[#111111] p-3" key={game.id}>
-                    <strong>{game.name}</strong>
-                    <p className="text-sm text-[#A3A3A3]">R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas - {game.isActive ? "ativo" : "inativo"}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <strong>{game.name}</strong>
+                        <p className="text-sm text-[#A3A3A3]">R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas - {game.isActive ? "ativo" : "inativo"}</p>
+                        <p className="mt-1 text-xs uppercase text-[#A3A3A3]">
+                          {game._count.items} inscricoes | {game._count.tournaments} torneios
+                        </p>
+                      </div>
+                      <span className={game.isActive ? "text-xs font-black text-emerald-300" : "text-xs font-black text-[#A3A3A3]"}>
+                        {game.isActive ? "ATIVO" : "INATIVO"}
+                      </span>
+                    </div>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <form action={toggleGameStatusAction}>
+                        <input name="gameId" type="hidden" value={game.id} />
+                        <input name="isActive" type="hidden" value={game.isActive ? "false" : "true"} />
+                        <button className="focus-ring min-h-10 w-full border border-[#B45CFF]/50 px-3 text-xs font-black uppercase text-[#F5F5F5] hover:border-[#F2B705] hover:text-[#F2B705]">
+                          {game.isActive ? "Desativar" : "Ativar"}
+                        </button>
+                      </form>
+                      <form action={deleteGameAction}>
+                        <input name="gameId" type="hidden" value={game.id} />
+                        <button className="focus-ring min-h-10 w-full border border-red-500/50 px-3 text-xs font-black uppercase text-red-200 hover:bg-red-500/10">
+                          {game._count.items > 0 || game._count.tournaments > 0 ? "Ocultar" : "Apagar"}
+                        </button>
+                      </form>
+                    </div>
                   </li>
                 ))}
               </ul>
