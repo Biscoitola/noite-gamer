@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Container, Panel } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { cancelRegistrationAction } from "./actions";
+import { cancelRegistrationAction, confirmRegistrationManuallyAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,18 @@ export default async function AdminRegistrationsPage({ searchParams }: { searchP
                 <td>{registration.items.map((item) => item.game.name).join(", ")}</td>
                 <td>{registration.status}</td>
                 <td>R$ {Number(registration.totalAmount).toFixed(2)}</td>
-                <td>
+                <td className="min-w-40">
+                  <div className="flex flex-wrap gap-2">
+                  <form action={confirmRegistrationManuallyAction}>
+                    <input name="registrationId" type="hidden" value={registration.id} />
+                    <input name="returnTo" type="hidden" value="/admin/inscricoes" />
+                    <button
+                      className="focus-ring min-h-9 border border-emerald-400/50 px-3 text-xs font-black uppercase text-emerald-100 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={registration.status === "CONFIRMADA"}
+                    >
+                      Liberar
+                    </button>
+                  </form>
                   <form action={cancelRegistrationAction}>
                     <input name="registrationId" type="hidden" value={registration.id} />
                     <button
@@ -48,6 +59,7 @@ export default async function AdminRegistrationsPage({ searchParams }: { searchP
                       Cancelar
                     </button>
                   </form>
+                  </div>
                 </td>
               </tr>
             ))}
