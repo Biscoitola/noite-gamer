@@ -1,6 +1,7 @@
 import { ButtonLink, Container, Panel } from "@/components/ui";
 import { EventLogo, PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
+import { trophyAwards } from "@/lib/award-showcase";
 import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
 import type { CSSProperties } from "react";
 
@@ -87,6 +88,23 @@ export default async function HomePage() {
               <p className="mt-2 text-[#A3A3A3]">Entre no admin e crie edicoes e jogos para liberar as inscricoes.</p>
             </Panel>
           )}
+        </section>
+        <section className="grid gap-4">
+          <div>
+            <p className="text-sm font-black uppercase text-[#B45CFF]">Premiacao oficial</p>
+            <h2 className="text-3xl font-black text-glow">Trofeus dos campeoes</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {trophyAwards.map((award) => (
+              <a className="trophy-card interactive-panel" href="/premios" key={award.title}>
+                <img src={award.imageUrl} alt={award.title} />
+                <div>
+                  <p>{award.game}</p>
+                  <h3>{award.title}</h3>
+                </div>
+              </a>
+            ))}
+          </div>
         </section>
         <section className="grid gap-4 pb-12">
           <div>

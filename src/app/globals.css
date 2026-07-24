@@ -349,6 +349,53 @@ a {
   text-transform: uppercase;
 }
 
+.trophy-card,
+.trophy-feature-card {
+  border: 1px solid rgba(255, 212, 0, 0.4);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 212, 0, 0.16), transparent 15rem),
+    linear-gradient(180deg, rgba(17, 17, 17, 0.96), rgba(8, 8, 8, 0.96));
+  box-shadow: 0 0 26px rgba(255, 212, 0, 0.1), 0 0 30px rgba(180, 92, 255, 0.1);
+}
+
+.trophy-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  text-decoration: none;
+}
+
+.trophy-card img,
+.trophy-feature-card img {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(180, 92, 255, 0.28);
+  object-fit: cover;
+}
+
+.trophy-card img {
+  aspect-ratio: 4 / 5;
+}
+
+.trophy-feature-card img {
+  aspect-ratio: 4 / 5;
+  max-height: 560px;
+}
+
+.trophy-card p {
+  color: #b45cff;
+  font-size: 0.75rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.trophy-card h3 {
+  color: #ffd400;
+  font-size: 1.1rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
 @keyframes sponsor-marquee {
   from {
     transform: translateX(0);

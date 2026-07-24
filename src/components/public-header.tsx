@@ -26,6 +26,7 @@ export function PublicHeader({ showBack = true }: { showBack?: boolean }) {
           <Link href="/minha-inscricao">Minha inscricao</Link>
           <Link href="/torneios">Torneios</Link>
           <Link href="/patrocinadores">Patrocinio</Link>
+          <Link href="/premios">Premios</Link>
           <Link href="/sorteios">Sorteios</Link>
           <Link href="/regulamento">Regulamento</Link>
           <Link href="/admin">Entrar (somente admin)</Link>

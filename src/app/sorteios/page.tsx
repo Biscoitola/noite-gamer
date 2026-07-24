@@ -1,5 +1,6 @@
 import { Container, Panel } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
+import { trophyAwards } from "@/lib/award-showcase";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,23 @@ export default async function RafflesPage() {
           <p className="text-sm font-black uppercase text-[#B45CFF]">Tickets e brindes</p>
           <h1 className="text-3xl font-black text-glow">Sorteios</h1>
         </div>
+        <section className="grid gap-4">
+          <div>
+            <p className="text-sm font-black uppercase text-[#FFD400]">Premiacao dos torneios</p>
+            <h2 className="text-2xl font-black text-glow">Trofeus dos campeoes</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {trophyAwards.map((award) => (
+              <Panel className="trophy-feature-card interactive-panel grid gap-3" key={award.title}>
+                <img src={award.imageUrl} alt={award.title} />
+                <div>
+                  <p className="text-xs font-black uppercase text-[#B45CFF]">{award.game}</p>
+                  <h3 className="text-lg font-black text-[#FFD400]">{award.title}</h3>
+                </div>
+              </Panel>
+            ))}
+          </div>
+        </section>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {prizes.map((prize) => (
             <Panel className="interactive-panel grid gap-3" key={prize.id}>
