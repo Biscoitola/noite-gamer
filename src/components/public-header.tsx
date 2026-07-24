@@ -1,5 +1,20 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BackButton } from "./back-button";
+
+const navLinks = [
+  { href: "/", label: "Home", match: "exact" },
+  { href: "/inscricao", label: "Inscricao" },
+  { href: "/minha-inscricao", label: "Minha inscricao" },
+  { href: "/torneios", label: "Torneios" },
+  { href: "/patrocinadores", label: "Patrocinio" },
+  { href: "/premios", label: "Premios" },
+  { href: "/sorteios", label: "Sorteios" },
+  { href: "/regulamento", label: "Regulamento" },
+  { href: "/admin", label: "Entrar (somente admin)" }
+];
 
 export function EventLogo({ compact = false }: { compact?: boolean }) {
   return (
@@ -16,20 +31,21 @@ export function EventLogo({ compact = false }: { compact?: boolean }) {
 }
 
 export function PublicHeader({ showBack = true }: { showBack?: boolean }) {
+  const pathname = usePathname();
+
   return (
     <header className="public-nav-shell sticky top-0 z-40 px-3 py-3">
       <div className="public-nav-inner mx-auto flex max-w-7xl flex-wrap items-center gap-3">
         <EventLogo compact />
         <nav className="public-nav-links ml-auto flex flex-wrap items-center gap-2 text-xs font-black uppercase">
-          <Link href="/">Home</Link>
-          <Link className="public-nav-cta" href="/inscricao">Inscricao</Link>
-          <Link href="/minha-inscricao">Minha inscricao</Link>
-          <Link href="/torneios">Torneios</Link>
-          <Link href="/patrocinadores">Patrocinio</Link>
-          <Link href="/premios">Premios</Link>
-          <Link href="/sorteios">Sorteios</Link>
-          <Link href="/regulamento">Regulamento</Link>
-          <Link href="/admin">Entrar (somente admin)</Link>
+          {navLinks.map((link) => {
+            const active = link.match === "exact" ? pathname === link.href : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link className={active ? "public-nav-active" : undefined} href={link.href} key={link.href}>
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
         {showBack ? <BackButton /> : null}
       </div>
