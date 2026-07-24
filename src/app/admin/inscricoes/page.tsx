@@ -47,7 +47,7 @@ export default async function AdminRegistrationsPage({ searchParams }: { searchP
                       className="focus-ring min-h-9 border border-emerald-400/50 px-3 text-xs font-black uppercase text-emerald-100 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={registration.status === "CONFIRMADA"}
                     >
-                      Liberar
+                      {registration.status === "CANCELADA" ? "Reativar" : "Liberar"}
                     </button>
                   </form>
                   <form action={cancelRegistrationAction}>

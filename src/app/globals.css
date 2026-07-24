@@ -722,6 +722,11 @@ a {
   box-shadow: inset 0 0 90px rgba(180, 92, 255, 0.08), 0 0 28px rgba(0, 0, 0, 0.45);
 }
 
+.world-bracket-viewport {
+  overflow: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
 .world-side {
   display: grid;
   grid-template-columns: repeat(3, 145px);
@@ -915,4 +920,132 @@ a {
 
 .world-center .champion-box strong {
   font-size: 0.92rem;
+}
+
+@media (max-width: 760px) {
+  .world-bracket-viewport {
+    overflow: visible;
+  }
+
+  .world-bracket {
+    grid-template-columns: minmax(0, 1fr) 66px minmax(0, 1fr);
+    gap: 5px;
+    width: 100%;
+    min-height: 470px;
+    padding: 7px;
+  }
+
+  .world-side {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    min-height: 450px;
+  }
+
+  .world-round {
+    min-height: 450px;
+  }
+
+  .world-round h2 {
+    font-size: 0.46rem;
+  }
+
+  .world-match-card {
+    height: 54px;
+    padding: 4px;
+  }
+
+  .world-match-head {
+    gap: 3px;
+    font-size: 0.42rem;
+  }
+
+  .world-player-list {
+    gap: 2px;
+    margin-top: 4px;
+  }
+
+  .public-player-row {
+    grid-template-columns: 8px minmax(0, 1fr);
+    gap: 3px;
+    min-height: 17px;
+    padding: 2px;
+    font-size: 0.43rem;
+  }
+
+  .player-badge {
+    width: 7px;
+    height: 6px;
+  }
+
+  .world-match-left::after,
+  .world-match-right::after {
+    width: 7px;
+  }
+
+  .world-match-left::after {
+    right: -8px;
+  }
+
+  .world-match-right::after {
+    left: -8px;
+  }
+
+  .world-connector {
+    width: 5px;
+    min-height: 18px;
+  }
+
+  .world-connector-left {
+    right: -7px;
+  }
+
+  .world-connector-right {
+    left: -7px;
+  }
+
+  .world-connector::before,
+  .world-connector::after {
+    width: 5px;
+  }
+
+  .world-center {
+    min-height: 450px;
+    gap: 8px;
+  }
+
+  .world-final {
+    gap: 5px;
+  }
+
+  .world-final h2 {
+    font-size: 0.52rem;
+  }
+
+  .world-trophy {
+    width: 50px;
+    height: 50px;
+    font-size: 1.8rem;
+  }
+
+  .world-center .world-match-card {
+    height: 62px;
+  }
+
+  .world-center .public-player-row {
+    min-height: 20px;
+    font-size: 0.46rem;
+  }
+
+  .world-center .champion-box {
+    width: 66px;
+    padding: 6px 4px;
+  }
+
+  .world-center .champion-box span {
+    font-size: 0.42rem;
+  }
+
+  .world-center .champion-box strong {
+    font-size: 0.5rem;
+  }
 }

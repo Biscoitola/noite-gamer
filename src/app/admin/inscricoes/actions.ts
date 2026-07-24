@@ -93,7 +93,7 @@ export async function confirmRegistrationManuallyAction(formData: FormData) {
   revalidatePath("/admin/torneios");
   revalidatePath("/admin/relatorios/inscritos");
   revalidatePath("/torneios");
-  redirect(`${returnTo}?success=Inscricao liberada manualmente.`);
+  redirect(`${returnTo}?success=Inscricao liberada ou reativada manualmente. Gere a chave novamente para atualizar os confrontos.`);
 }
 
 function getSafeReturnPath(value: string) {
