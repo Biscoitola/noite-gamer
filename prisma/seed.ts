@@ -66,6 +66,52 @@ async function main() {
     });
   }
 
+  const sponsorData = [
+    {
+      name: "Bechi Acessorios",
+      description: "Patrocinador oficial da Noite Gamer.",
+      logoUrl: "/assets/sponsor-bechi-acessorios.jpeg",
+      carouselImageUrl: "/assets/sponsor-bechi-acessorios.jpeg",
+      carouselOrder: 1
+    },
+    {
+      name: "GuriCell",
+      description: "Celulares e assistencia tecnica apoiando a Noite Gamer.",
+      logoUrl: "/assets/sponsor-guricell.jpeg",
+      carouselImageUrl: "/assets/sponsor-guricell.jpeg",
+      carouselOrder: 2
+    }
+  ];
+
+  for (const sponsor of sponsorData) {
+    const existingSponsor = await prisma.sponsor.findFirst({
+      where: { eventId: event.id, name: sponsor.name }
+    });
+
+    if (existingSponsor) {
+      await prisma.sponsor.update({
+        where: { id: existingSponsor.id },
+        data: {
+          description: sponsor.description,
+          logoUrl: sponsor.logoUrl,
+          carouselImageUrl: sponsor.carouselImageUrl,
+          carouselOrder: sponsor.carouselOrder,
+          showInCarousel: true,
+          isActive: true
+        }
+      });
+    } else {
+      await prisma.sponsor.create({
+        data: {
+          eventId: event.id,
+          ...sponsor,
+          showInCarousel: true,
+          isActive: true
+        }
+      });
+    }
+  }
+
   const carouselSetting = await prisma.systemSetting.findUnique({ where: { key: "home.carouselConfig" } });
   const shouldSeedCarousel =
     !carouselSetting ||
