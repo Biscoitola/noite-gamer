@@ -1,5 +1,6 @@
-import { Container, Panel } from "@/components/ui";
+import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
+import { Container, Panel } from "@/components/ui";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -21,26 +22,22 @@ export default async function SponsorsPage() {
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           {sponsors.map((sponsor) => (
-            <Panel className="interactive-panel grid gap-4" key={sponsor.id}>
-              <div className="flex flex-wrap items-center gap-4">
-                <img src={sponsor.logoUrl} alt={`Logo ${sponsor.name}`} className="size-24 border border-[#FFD400]/40 bg-white object-contain p-2" />
-                <div>
-                  <h2 className="text-2xl font-black text-[#FFD400]">{sponsor.name}</h2>
-                  <p className="mt-1 text-sm text-[#D4D4D4]">{sponsor.description}</p>
+            <Link className="focus-ring block" href={`/patrocinadores/${sponsor.id}`} key={sponsor.id}>
+              <Panel className="interactive-panel grid min-h-32 gap-4 transition hover:border-[#FFD400]/70">
+                <div className="flex flex-wrap items-center gap-4">
+                  <img src={sponsor.logoUrl} alt={`Logo ${sponsor.name}`} className="h-24 w-28 object-contain" />
+                  <div>
+                    <h2 className="text-2xl font-black text-[#FFD400]">{sponsor.name}</h2>
+                    <p className="mt-1 text-sm text-[#D4D4D4]">{sponsor.description}</p>
+                    <p className="mt-2 text-xs font-black uppercase text-[#B45CFF]">
+                      {sponsor.prizes.length > 0
+                        ? `${sponsor.prizes.length} premio${sponsor.prizes.length > 1 ? "s" : ""} cedido${sponsor.prizes.length > 1 ? "s" : ""}`
+                        : "Ver detalhes"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              {sponsor.prizes.length > 0 ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {sponsor.prizes.map((prize) => (
-                    <div className="border border-[#B45CFF]/30 bg-black/30 p-3" key={prize.id}>
-                      <img src={prize.imageUrl} alt={prize.title} className="h-40 w-full object-cover" />
-                      <h3 className="mt-3 font-black text-[#FFD400]">{prize.title}</h3>
-                      <p className="mt-1 text-sm text-[#A3A3A3]">{prize.description}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </Panel>
+              </Panel>
+            </Link>
           ))}
           {sponsors.length === 0 ? <Panel><p>Nenhum patrocinador publicado no momento.</p></Panel> : null}
         </div>

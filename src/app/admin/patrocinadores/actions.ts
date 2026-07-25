@@ -12,7 +12,7 @@ export async function createSponsorAction(formData: FormData) {
   const logoUrl = String(formData.get("logoUrl") || "").trim();
   if (!eventId || !name || !logoUrl) throw new Error("Informe evento, nome e logo do patrocinador.");
 
-  await prisma.sponsor.create({
+  const sponsor = await prisma.sponsor.create({
     data: {
       eventId,
       name,
@@ -25,13 +25,13 @@ export async function createSponsorAction(formData: FormData) {
       isActive: formData.get("isActive") === "on"
     }
   });
-  revalidateSponsorPages();
+  revalidateSponsorPages(sponsor.id);
 }
 
 export async function updateSponsorCarouselAction(formData: FormData) {
   await requireAdmin();
   const sponsorId = String(formData.get("sponsorId") || "");
-  await prisma.sponsor.update({
+  const sponsor = await prisma.sponsor.update({
     where: { id: sponsorId },
     data: {
       logoUrl: String(formData.get("logoUrl") || "").trim(),
@@ -41,7 +41,7 @@ export async function updateSponsorCarouselAction(formData: FormData) {
       isActive: formData.get("isActive") === "on"
     }
   });
-  revalidateSponsorPages();
+  revalidateSponsorPages(sponsor.id);
 }
 
 export async function createPrizeAction(formData: FormData) {
@@ -63,7 +63,7 @@ export async function createPrizeAction(formData: FormData) {
       isActive: formData.get("isActive") === "on"
     }
   });
-  revalidateSponsorPages();
+  revalidateSponsorPages(sponsorId);
 }
 
 export async function drawPrizeAction(formData: FormData) {
@@ -85,21 +85,22 @@ export async function drawPrizeAction(formData: FormData) {
     where: { id: prize.id },
     data: { winnerRegistrationId: winner.id, drawnAt: new Date() }
   });
-  revalidateSponsorPages();
+  revalidateSponsorPages(prize.sponsorId);
 }
 
 export async function clearPrizeWinnerAction(formData: FormData) {
   await requireAdmin();
-  await prisma.prize.update({
+  const prize = await prisma.prize.update({
     where: { id: String(formData.get("prizeId") || "") },
     data: { winnerRegistrationId: null, drawnAt: null }
   });
-  revalidateSponsorPages();
+  revalidateSponsorPages(prize.sponsorId);
 }
 
-function revalidateSponsorPages() {
+function revalidateSponsorPages(sponsorId?: string) {
   revalidatePath("/admin/patrocinadores");
   revalidatePath("/patrocinadores");
+  if (sponsorId) revalidatePath(`/patrocinadores/${sponsorId}`);
   revalidatePath("/sorteios");
   revalidatePath("/minha-inscricao");
 }

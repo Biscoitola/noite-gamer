@@ -77,7 +77,7 @@ export default async function AdminSponsorsPage() {
           {sponsors.map((sponsor) => (
             <article className="border border-[#B45CFF]/30 bg-black/25 p-4" key={sponsor.id}>
               <div className="flex flex-wrap items-center gap-4">
-                <img src={sponsor.logoUrl} alt={`Logo ${sponsor.name}`} className="size-16 border border-[#FFD400]/40 bg-white object-contain p-1" />
+                <img src={sponsor.logoUrl} alt={`Logo ${sponsor.name}`} className="size-16 object-contain" />
                 <div>
                   <h3 className="text-lg font-black text-[#FFD400]">{sponsor.name}</h3>
                   <p className="text-sm text-[#A3A3A3]">{sponsor.event.edition} - {sponsor.isActive ? "visivel" : "oculto"}</p>
@@ -108,6 +108,30 @@ export default async function AdminSponsorsPage() {
                   Salvar carrossel
                 </button>
               </form>
+
+              <form action={createPrizeAction} className="mt-4 grid gap-3 border border-[#FFD400]/25 bg-black/25 p-3">
+                <input name="sponsorId" type="hidden" value={sponsor.id} />
+                <p className="text-xs font-black uppercase text-[#FFD400]">Cadastrar premio deste patrocinador</p>
+                <Field label="Nome do premio">
+                  <input className={inputClass} name="title" required />
+                </Field>
+                <Field label="URL da foto do premio">
+                  <input className={inputClass} name="imageUrl" required placeholder="https://..." />
+                </Field>
+                <Field label="Descricao">
+                  <textarea className={inputClass} name="description" rows={3} />
+                </Field>
+                <Field label="Quantidade">
+                  <input className={inputClass} name="quantity" min="1" type="number" defaultValue="1" />
+                </Field>
+                <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                  <input name="isActive" type="checkbox" defaultChecked /> Mostrar no site
+                </label>
+                <button className="focus-ring min-h-11 bg-[#B45CFF] px-3 text-xs font-black uppercase text-white">
+                  Salvar premio
+                </button>
+              </form>
+
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 {sponsor.prizes.map((prize) => (
                   <div className="grid gap-3 border border-[#FFD400]/25 bg-[#111111] p-3" key={prize.id}>
