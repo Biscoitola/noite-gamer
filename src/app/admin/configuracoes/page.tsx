@@ -46,7 +46,15 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
         </div>
       ) : null}
 
-      <Panel className="interactive-panel">
+      <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <AdminAnchor href="#home">Home</AdminAnchor>
+        <AdminAnchor href="#carrossel">Carrossel</AdminAnchor>
+        <AdminAnchor href="#edicao">Criar edicao</AdminAnchor>
+        <AdminAnchor href="#jogo">Adicionar jogo</AdminAnchor>
+        <AdminAnchor href="#cadastrados">Cadastrados</AdminAnchor>
+      </nav>
+
+      <Panel className="interactive-panel scroll-mt-6" id="home">
         <div className="grid gap-4 lg:grid-cols-[1fr_240px] lg:items-start">
           <div>
             <h2 className="text-xl font-black text-[#FFD400]">Imagem principal da home</h2>
@@ -76,7 +84,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
         </div>
       </Panel>
 
-      <Panel className="interactive-panel">
+      <Panel className="interactive-panel scroll-mt-6" id="carrossel">
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <div>
             <h2 className="text-xl font-black text-[#FFD400]">Carrossel da home</h2>
@@ -149,7 +157,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
       </Panel>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Panel className="interactive-panel">
+        <Panel className="interactive-panel scroll-mt-6" id="edicao">
           <h2 className="text-xl font-black text-[#FFD400]">Criar edicao</h2>
           <form action={createEditionAction} className="mt-4 grid gap-3">
             <Field label="Nome do evento"><input className={inputClass} name="name" required defaultValue="Noite Gamer" /></Field>
@@ -179,7 +187,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
           </form>
         </Panel>
 
-        <Panel className="interactive-panel">
+        <Panel className="interactive-panel scroll-mt-6" id="jogo">
           <h2 className="text-xl font-black text-[#FFD400]">Adicionar jogo</h2>
           <form action={createGameAction} className="mt-4 grid gap-3">
             <Field label="Edicao">
@@ -202,7 +210,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
         </Panel>
       </section>
 
-      <Panel>
+      <Panel className="scroll-mt-6" id="cadastrados">
         <h2 className="text-xl font-black">Edicoes cadastradas</h2>
         <div className="mt-4 grid gap-4">
           {events.map((event) => (
@@ -284,4 +292,12 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
 
 function readSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function AdminAnchor({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a className="focus-ring border border-[#B45CFF]/35 bg-black/35 px-3 py-3 text-center text-xs font-black uppercase text-[#F5F5F5] hover:border-[#FFD400] hover:text-[#FFD400]" href={href}>
+      {children}
+    </a>
+  );
 }

@@ -21,8 +21,8 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
   );
 }
 
-export function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <section className={clsx("border border-[#B45CFF]/35 bg-[#111111]/90 p-4 shadow-[0_0_24px_rgba(180,92,255,0.12)]", className)}>{children}</section>;
+export function Panel({ children, className, ...props }: React.HTMLAttributes<HTMLElement>) {
+  return <section className={clsx("border border-[#B45CFF]/35 bg-[#111111]/90 p-4 shadow-[0_0_24px_rgba(180,92,255,0.12)]", className)} {...props}>{children}</section>;
 }
 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {

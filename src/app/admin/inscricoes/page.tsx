@@ -27,8 +27,8 @@ export default async function AdminRegistrationsPage({ searchParams }: { searchP
         </div>
       ) : null}
       <Panel className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
-          <thead><tr className="text-[#FFD400]"><th>Protocolo</th><th>Participante</th><th>Contato</th><th>Jogos</th><th>Status</th><th>Valor</th><th>Acoes</th></tr></thead>
+        <table className="w-full min-w-[900px] text-left text-sm">
+          <thead><tr className="text-[#FFD400]"><th>Protocolo</th><th>Participante</th><th>Contato</th><th>Jogos</th><th>Status</th><th>Cupom</th><th>Valor</th><th>Acoes</th></tr></thead>
           <tbody>
             {registrations.map((registration) => (
               <tr key={registration.id} className="border-t border-[#FFD400]/20">
@@ -37,6 +37,7 @@ export default async function AdminRegistrationsPage({ searchParams }: { searchP
                 <td>{registration.participant.whatsapp}</td>
                 <td>{registration.items.map((item) => item.game.name).join(", ")}</td>
                 <td>{registration.status}</td>
+                <td>{registration.couponCode ? `${registration.couponCode} (-R$ ${Number(registration.couponDiscount).toFixed(2)})` : "-"}</td>
                 <td>R$ {Number(registration.totalAmount).toFixed(2)}</td>
                 <td className="min-w-40">
                   <div className="flex flex-wrap gap-2">

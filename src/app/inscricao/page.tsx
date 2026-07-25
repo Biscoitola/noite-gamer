@@ -41,6 +41,9 @@ export default async function RegistrationPage() {
               </label>
             ))}
           </fieldset>
+          <Field label="Cupom de desconto">
+            <input className={inputClass} name="couponCode" placeholder="EX: RELAMPAGO10" />
+          </Field>
           <label className="flex gap-3 text-sm"><input required name="consentTerms" type="checkbox" /> Aceito o regulamento.</label>
           <label className="flex gap-3 text-sm"><input required name="consentPrivacy" type="checkbox" /> Aceito a politica de privacidade.</label>
           <label className="flex gap-3 text-sm"><input name="consentImage" type="checkbox" /> Autorizo uso de imagem.</label>

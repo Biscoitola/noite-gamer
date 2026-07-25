@@ -19,6 +19,11 @@ export default async function PaymentPage({ params }: { params: Promise<{ token:
       <Panel className="grid gap-4">
         <p className="text-[#A3A3A3]">Protocolo {registration.protocol}</p>
         <strong className="text-2xl text-[#FFD400]">Status: {registration.status}</strong>
+        {registration.couponCode ? (
+          <p className="text-sm text-[#D4D4D4]">
+            Cupom {registration.couponCode}: desconto de R$ {Number(registration.couponDiscount).toFixed(2)}
+          </p>
+        ) : null}
         {payment && registration.status !== "CONFIRMADA" ? (
           <>
             <Image src={payment.qrCodeImage} alt="QR Code Pix" width={320} height={320} className="bg-white p-2" unoptimized />

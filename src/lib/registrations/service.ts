@@ -20,7 +20,6 @@ export async function createRegistration(input: RegistrationInput) {
   const games = event.games.filter((game) => input.gameIds.includes(game.id));
   if (games.length !== input.gameIds.length) throw new Error("Modalidade invalida.");
 
-  const totals = calculateRegistrationTotal(games.map((game) => ({ gameId: game.id, price: Number(game.price) })));
   const token = createPublicToken();
   const participantToken = createPublicToken();
   const protocol = createProtocol();
@@ -34,6 +33,47 @@ export async function createRegistration(input: RegistrationInput) {
         where: { gameId: game.id, status: { in: ["CONFIRMED", "RESERVED"] } }
       });
       if (confirmed >= game.capacity) throw new Error(`Nao ha vagas disponiveis para ${game.name}.`);
+    }
+
+    const couponCode = input.couponCode?.trim().toUpperCase();
+    const coupon = couponCode
+      ? await tx.discountCoupon.findFirst({
+          where: { eventId: event.id, code: couponCode }
+        })
+      : null;
+    const now = new Date();
+    if (couponCode && !coupon) throw new Error("Cupom de desconto invalido.");
+    if (coupon && (!coupon.isActive || coupon.startsAt > now || coupon.expiresAt < now)) {
+      throw new Error("Cupom de desconto expirado ou indisponivel.");
+    }
+    if (coupon?.maxUses != null && coupon.usedCount >= coupon.maxUses) {
+      throw new Error("Cupom de desconto esgotado.");
+    }
+
+    const totals = calculateRegistrationTotal(
+      games.map((game) => ({ gameId: game.id, price: Number(game.price) })),
+      coupon
+        ? {
+            code: coupon.code,
+            type: coupon.type,
+            value: Number(coupon.value),
+            active: true
+          }
+        : undefined
+    );
+
+    if (coupon) {
+      const updatedCoupon = await tx.discountCoupon.updateMany({
+        where: {
+          id: coupon.id,
+          isActive: true,
+          startsAt: { lte: now },
+          expiresAt: { gte: now },
+          OR: [{ maxUses: null }, { usedCount: { lt: coupon.maxUses ?? 0 } }]
+        },
+        data: { usedCount: { increment: 1 } }
+      });
+      if (updatedCoupon.count !== 1) throw new Error("Cupom de desconto expirado ou esgotado.");
     }
 
     const participant = await tx.participant.create({
@@ -61,6 +101,9 @@ export async function createRegistration(input: RegistrationInput) {
         totalAmount: totals.total,
         protocol,
         raffleCode,
+        couponId: coupon?.id,
+        couponCode: coupon?.code,
+        couponDiscount: totals.couponDiscount,
         publicTokenHash: hashToken(token),
         expiresAt,
         items: {

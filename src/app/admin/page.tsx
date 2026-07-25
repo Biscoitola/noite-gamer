@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container, Panel } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -23,6 +24,12 @@ export default async function AdminPage() {
         <Panel><span>Confirmadas</span><strong className="block text-3xl text-[#FFD400]">{confirmed}</strong></Panel>
         <Panel><span>Receita</span><strong className="block text-3xl text-[#FFD400]">R$ {Number(paid._sum.amount ?? 0).toFixed(2)}</strong></Panel>
       </section>
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <AdminShortcut href="/admin/inscricoes" label="Inscricoes" />
+        <AdminShortcut href="/admin/cupons" label="Cupons" />
+        <AdminShortcut href="/admin/configuracoes" label="Configuracoes" />
+        <AdminShortcut href="/admin/patrocinadores" label="Patrocinadores" />
+      </section>
       <Panel>
         <h2 className="text-xl font-black">Vagas por modalidade</h2>
         <ul className="mt-3 grid gap-2">{games.map((game) => <li key={game.id}>{game.name}: {game._count.items}/{game.capacity}</li>)}</ul>
@@ -32,5 +39,13 @@ export default async function AdminPage() {
         <ul className="mt-3 grid gap-2">{latest.map((registration) => <li key={registration.id}>{registration.protocol} - {registration.participant.publicName} - {registration.status}</li>)}</ul>
       </Panel>
     </Container>
+  );
+}
+
+function AdminShortcut({ href, label }: { href: string; label: string }) {
+  return (
+    <Link className="focus-ring border border-[#B45CFF]/35 bg-black/35 px-4 py-4 text-sm font-black uppercase text-[#F5F5F5] hover:border-[#FFD400] hover:text-[#FFD400]" href={href}>
+      {label}
+    </Link>
   );
 }

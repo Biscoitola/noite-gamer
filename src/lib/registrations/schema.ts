@@ -8,6 +8,7 @@ export const registrationSchema = z.object({
   birthDate: z.string().optional(),
   city: z.string().min(2),
   gameIds: z.array(z.string()).min(1),
+  couponCode: z.string().trim().max(40).optional().or(z.literal("")),
   consentTerms: z.literal(true),
   consentPrivacy: z.literal(true),
   consentImage: z.boolean().optional().default(false)

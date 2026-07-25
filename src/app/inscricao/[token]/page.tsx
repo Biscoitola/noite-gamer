@@ -21,6 +21,10 @@ export default async function RegistrationStatusPage({ params }: { params: Promi
         <strong className="text-xl text-[#FFD400]">{registration.raffleCode ?? registration.protocol}</strong>
         <p className="mt-4">Nome publico: {registration.participant.publicName}</p>
         <p>Status: {registration.status}</p>
+        <p>Valor: R$ {Number(registration.totalAmount).toFixed(2)}</p>
+        {registration.couponCode ? (
+          <p>Cupom: {registration.couponCode} (-R$ {Number(registration.couponDiscount).toFixed(2)})</p>
+        ) : null}
         <ul className="mt-4 grid gap-2">
           {registration.items.map((item) => <li key={item.id}>{item.game.name} - {item.status}</li>)}
         </ul>

@@ -52,6 +52,9 @@ export function RegistrationLookupForm() {
               <Info label="Inscricao" value={state.registration.status} />
               <Info label="Pagamento" value={state.registration.paymentStatus} />
               <Info label="Valor" value={`R$ ${state.registration.totalAmount}`} />
+              {state.registration.couponCode ? (
+                <Info label="Cupom" value={`${state.registration.couponCode} (-R$ ${state.registration.couponDiscount})`} />
+              ) : null}
             </div>
             <div>
               <h3 className="mb-3 text-lg font-black text-[#FFD400]">Jogos inscritos</h3>

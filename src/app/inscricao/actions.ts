@@ -14,6 +14,7 @@ export async function submitRegistration(formData: FormData) {
     birthDate: formData.get("birthDate"),
     city: formData.get("city"),
     gameIds,
+    couponCode: formData.get("couponCode"),
     consentTerms: formData.get("consentTerms") === "on",
     consentPrivacy: formData.get("consentPrivacy") === "on",
     consentImage: formData.get("consentImage") === "on"

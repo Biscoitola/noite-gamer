@@ -68,6 +68,11 @@ enum MatchStatus {
   LOCKED
 }
 
+enum CouponDiscountType {
+  FIXED
+  PERCENT
+}
+
 model AdminUser {
   id                  String     @id @default(cuid())
   name                String
@@ -86,7 +91,7 @@ model AdminUser {
 }
 
 model Event {
-  id                   String         @id @default(cuid())
+  id                   String           @id @default(cuid())
   name                 String
   edition              String
   description          String
@@ -97,15 +102,16 @@ model Event {
   startsAt             DateTime
   registrationStartsAt DateTime
   registrationEndsAt   DateTime
-  status               EventStatus    @default(ACTIVE)
+  status               EventStatus      @default(ACTIVE)
   settings             Json
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
   games                Game[]
   registrations        Registration[]
   tournaments          Tournament[]
   sponsors             Sponsor[]
   prizes               Prize[]
+  coupons              DiscountCoupon[]
 }
 
 model Game {
@@ -163,6 +169,9 @@ model Registration {
   totalAmount     Decimal            @db.Decimal(10, 2)
   protocol        String             @unique
   raffleCode      String?            @unique
+  couponId        String?
+  couponCode      String?
+  couponDiscount  Decimal            @default(0) @db.Decimal(10, 2)
   publicTokenHash String
   expiresAt       DateTime
   confirmedAt     DateTime?
@@ -172,6 +181,7 @@ model Registration {
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   event           Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  coupon          DiscountCoupon?    @relation(fields: [couponId], references: [id], onDelete: SetNull)
   participant     Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
   items           RegistrationItem[]
   payments        Payment[]
@@ -179,6 +189,28 @@ model Registration {
 
   @@index([eventId, status])
   @@index([participantId])
+  @@index([couponId])
+}
+
+model DiscountCoupon {
+  id            String             @id @default(cuid())
+  eventId       String
+  code          String
+  description   String
+  type          CouponDiscountType
+  value         Decimal            @db.Decimal(10, 2)
+  startsAt      DateTime
+  expiresAt     DateTime
+  maxUses       Int?
+  usedCount     Int                @default(0)
+  isActive      Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  event         Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@unique([eventId, code])
+  @@index([eventId, isActive, startsAt, expiresAt])
 }
 
 model Sponsor {

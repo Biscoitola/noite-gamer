@@ -6,7 +6,7 @@ export type PriceItem = {
 
 export type Coupon = {
   code: string;
-  type: "fixed" | "percent";
+  type: "fixed" | "percent" | "FIXED" | "PERCENT";
   value: number;
   active: boolean;
 };
@@ -14,12 +14,13 @@ export type Coupon = {
 export function calculateRegistrationTotal(items: PriceItem[], coupon?: Coupon) {
   const subtotal = items.reduce((sum, item) => sum + item.price - (item.discount ?? 0), 0);
   const multiGameDiscount = items.length >= 3 ? 10 : items.length === 2 ? 5 : 0;
-  const couponDiscount =
+  const rawCouponDiscount =
     coupon?.active === true
-      ? coupon.type === "fixed"
+      ? coupon.type === "fixed" || coupon.type === "FIXED"
         ? coupon.value
         : (subtotal * coupon.value) / 100
       : 0;
+  const couponDiscount = Math.min(Math.max(0, rawCouponDiscount), Math.max(0, subtotal - multiGameDiscount));
   const total = Math.max(0, subtotal - multiGameDiscount - couponDiscount);
   return {
     subtotal: roundMoney(subtotal),

@@ -13,6 +13,8 @@ export async function GET() {
     nome_publico: item.participant.publicName,
     whatsapp: item.participant.whatsapp,
     jogos: item.items.map((entry) => entry.game.name).join("; "),
+    cupom: item.couponCode ?? "",
+    desconto_cupom: item.couponDiscount,
     valor: item.totalAmount
   })));
   return new NextResponse(csv, {

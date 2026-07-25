@@ -11,6 +11,12 @@ describe("pricing", () => {
     expect(calculateRegistrationTotal([{ gameId: "a", price: 100 }], { code: "PROMO", type: "percent", value: 20, active: true }).total).toBe(80);
   });
 
+  it("aplica cupom fixo sem deixar desconto maior que o subtotal", () => {
+    const totals = calculateRegistrationTotal([{ gameId: "a", price: 30 }], { code: "FLASH", type: "FIXED", value: 50, active: true });
+    expect(totals.couponDiscount).toBe(30);
+    expect(totals.total).toBe(0);
+  });
+
   it("valida capacidade com reservas", () => {
     expect(hasCapacity(10, 8, 1, 1)).toBe(true);
     expect(hasCapacity(10, 8, 2, 1)).toBe(false);

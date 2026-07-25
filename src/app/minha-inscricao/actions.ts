@@ -10,6 +10,8 @@ export type RegistrationLookupState = {
     raffleCode: string;
     status: string;
     totalAmount: string;
+    couponCode?: string;
+    couponDiscount: string;
     publicName: string;
     fullName: string;
     city: string;
@@ -48,6 +50,8 @@ export async function lookupRegistration(_prevState: RegistrationLookupState, fo
       raffleCode: registration.raffleCode ?? registration.protocol,
       status: registration.status,
       totalAmount: Number(registration.totalAmount).toFixed(2),
+      couponCode: registration.couponCode ?? undefined,
+      couponDiscount: Number(registration.couponDiscount).toFixed(2),
       publicName: registration.participant.publicName,
       fullName: registration.participant.fullName,
       city: registration.participant.city,
