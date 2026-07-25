@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/lib/security";
 
 const prisma = new PrismaClient();
+const publicAssetBaseUrl = "https://raw.githubusercontent.com/Biscoitola/noite-gamer/main/public/assets";
 
 async function main() {
   const adminEmail = process.env.ADMIN_SEED_EMAIL ?? "admin@noitegamer.local";
@@ -70,15 +71,15 @@ async function main() {
     {
       name: "Bechi Acessorios",
       description: "Patrocinador oficial da Noite Gamer.",
-      logoUrl: "/assets/sponsor-bechi-acessorios.jpeg",
-      carouselImageUrl: "/assets/sponsor-bechi-acessorios.jpeg",
+      logoUrl: `${publicAssetBaseUrl}/sponsor-bechi-acessorios.jpeg`,
+      carouselImageUrl: `${publicAssetBaseUrl}/sponsor-bechi-acessorios.jpeg`,
       carouselOrder: 1
     },
     {
       name: "GuriCell",
       description: "Celulares e assistencia tecnica apoiando a Noite Gamer.",
-      logoUrl: "/assets/sponsor-guricell.jpeg",
-      carouselImageUrl: "/assets/sponsor-guricell.jpeg",
+      logoUrl: `${publicAssetBaseUrl}/sponsor-guricell.jpeg`,
+      carouselImageUrl: `${publicAssetBaseUrl}/sponsor-guricell.jpeg`,
       carouselOrder: 2
     }
   ];
