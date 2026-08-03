@@ -78,13 +78,13 @@ export async function createRegistration(input: RegistrationInput) {
 
     const participant = await tx.participant.create({
       data: {
-        fullName: input.fullName,
+        fullName: input.publicName,
         publicName: input.publicName,
         whatsapp: input.whatsapp,
         normalizedWhatsapp,
-        email: input.email || null,
-        birthDate: input.birthDate ? new Date(input.birthDate) : null,
-        city: input.city,
+        email: null,
+        birthDate: null,
+        city: "Nao informado",
         publicId: nanoid(16),
         accessTokenHash: hashToken(participantToken),
         consentTermsAt: new Date(),
@@ -123,8 +123,8 @@ export async function createRegistration(input: RegistrationInput) {
     const charge = await provider.createPixCharge({
       registrationId: registration.id,
       amount: totals.total,
-      payerName: participant.fullName,
-      payerEmail: participant.email,
+      payerName: participant.publicName,
+      payerEmail: null,
       referenceCode: registration.protocol,
       expiresAt,
       idempotencyKey: nanoid(32)
