@@ -5,7 +5,7 @@ import { normalizeWhatsapp } from "@/lib/security";
 
 export type RegistrationLookupState = {
   error?: string;
-  registration?: {
+  registrations?: Array<{
     protocol: string;
     raffleCode: string;
     status: string;
@@ -13,39 +13,34 @@ export type RegistrationLookupState = {
     couponCode?: string;
     couponDiscount: string;
     publicName: string;
-    fullName: string;
-    city: string;
     paymentStatus: string;
     games: Array<{ name: string; status: string; price: string }>;
-  };
+  }>;
 };
 
 export async function lookupRegistration(_prevState: RegistrationLookupState, formData: FormData): Promise<RegistrationLookupState> {
-  const protocol = String(formData.get("protocol") ?? "").trim().toUpperCase();
   const whatsapp = normalizeWhatsapp(String(formData.get("whatsapp") ?? ""));
 
-  if (!protocol || whatsapp.length < 12) {
-    return { error: "Informe o protocolo e o WhatsApp usado na inscricao." };
+  if (whatsapp.length < 12) {
+    return { error: "Informe o WhatsApp usado na inscricao." };
   }
 
-  const registration = await prisma.registration.findFirst({
-    where: {
-      protocol,
-      participant: { normalizedWhatsapp: whatsapp }
-    },
+  const registrations = await prisma.registration.findMany({
+    where: { participant: { normalizedWhatsapp: whatsapp } },
     include: {
       participant: true,
       payments: { orderBy: { createdAt: "desc" }, take: 1 },
       items: { include: { game: true }, orderBy: { createdAt: "asc" } }
-    }
+    },
+    orderBy: { createdAt: "desc" }
   });
 
-  if (!registration) {
-    return { error: "Nao encontramos uma inscricao com esse protocolo e WhatsApp." };
+  if (registrations.length === 0) {
+    return { error: "Nao encontramos inscricoes com esse WhatsApp." };
   }
 
   return {
-    registration: {
+    registrations: registrations.map((registration) => ({
       protocol: registration.protocol,
       raffleCode: registration.raffleCode ?? registration.protocol,
       status: registration.status,
@@ -53,14 +48,12 @@ export async function lookupRegistration(_prevState: RegistrationLookupState, fo
       couponCode: registration.couponCode ?? undefined,
       couponDiscount: Number(registration.couponDiscount).toFixed(2),
       publicName: registration.participant.publicName,
-      fullName: registration.participant.fullName,
-      city: registration.participant.city,
       paymentStatus: registration.payments[0]?.status ?? "SEM_PAGAMENTO",
       games: registration.items.map((item) => ({
         name: item.game.name,
         status: item.status,
         price: Number(item.finalPrice).toFixed(2)
       }))
-    }
+    }))
   };
 }

@@ -14,12 +14,9 @@ export function RegistrationLookupForm() {
       <Panel>
         <h2 className="text-2xl font-black text-[#FFD400]">Consultar inscricao</h2>
         <p className="mt-2 text-sm text-[#D4D4D4]">
-          Use o protocolo recebido no cadastro e o mesmo WhatsApp informado na inscricao.
+          Use o mesmo WhatsApp informado na inscricao para ver seus dados.
         </p>
         <form action={formAction} className="mt-5 grid gap-4">
-          <Field label="Protocolo">
-            <input className={inputClass} name="protocol" placeholder="NG-20260720-ABC123" required />
-          </Field>
           <Field label="WhatsApp">
             <input className={inputClass} name="whatsapp" inputMode="tel" placeholder="(54) 99999-9999" required />
           </Field>
@@ -35,44 +32,46 @@ export function RegistrationLookupForm() {
       </Panel>
 
       <Panel>
-        {state.registration ? (
+        {state.registrations && state.registrations.length > 0 ? (
           <div className="grid gap-4">
-            <div>
-              <p className="text-sm font-bold uppercase text-[#A3A3A3]">Protocolo</p>
-              <strong className="text-2xl text-[#FFD400]">{state.registration.protocol}</strong>
-            </div>
-            <div>
-              <p className="text-sm font-bold uppercase text-[#A3A3A3]">Ticket para sorteios</p>
-              <strong className="text-2xl text-[#FFD400]">{state.registration.raffleCode}</strong>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Info label="Nome" value={state.registration.fullName} />
-              <Info label="Nick na chave" value={state.registration.publicName} />
-              <Info label="Cidade" value={state.registration.city} />
-              <Info label="Inscricao" value={state.registration.status} />
-              <Info label="Pagamento" value={state.registration.paymentStatus} />
-              <Info label="Valor" value={`R$ ${state.registration.totalAmount}`} />
-              {state.registration.couponCode ? (
-                <Info label="Cupom" value={`${state.registration.couponCode} (-R$ ${state.registration.couponDiscount})`} />
-              ) : null}
-            </div>
-            <div>
-              <h3 className="mb-3 text-lg font-black text-[#FFD400]">Jogos inscritos</h3>
-              <ul className="grid gap-2">
-                {state.registration.games.map((game) => (
-                  <li key={game.name} className="flex items-center justify-between border border-[#B45CFF]/30 bg-black/30 px-3 py-2">
-                    <span className="font-bold">{game.name}</span>
-                    <span className="text-sm text-[#D4D4D4]">{game.status} | R$ {game.price}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {state.registrations.map((registration) => (
+              <article className="grid gap-4 border border-[#FFD400]/25 bg-black/25 p-4" key={registration.protocol}>
+                <div>
+                  <p className="text-sm font-bold uppercase text-[#A3A3A3]">Protocolo</p>
+                  <strong className="text-2xl text-[#FFD400]">{registration.protocol}</strong>
+                </div>
+                <div>
+                  <p className="text-sm font-bold uppercase text-[#A3A3A3]">Ticket para sorteios</p>
+                  <strong className="text-2xl text-[#FFD400]">{registration.raffleCode}</strong>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Info label="Nick na chave" value={registration.publicName} />
+                  <Info label="Inscricao" value={registration.status} />
+                  <Info label="Pagamento" value={registration.paymentStatus} />
+                  <Info label="Valor" value={`R$ ${registration.totalAmount}`} />
+                  {registration.couponCode ? (
+                    <Info label="Cupom" value={`${registration.couponCode} (-R$ ${registration.couponDiscount})`} />
+                  ) : null}
+                </div>
+                <div>
+                  <h3 className="mb-3 text-lg font-black text-[#FFD400]">Jogos inscritos</h3>
+                  <ul className="grid gap-2">
+                    {registration.games.map((game) => (
+                      <li key={game.name} className="flex items-center justify-between gap-3 border border-[#B45CFF]/30 bg-black/30 px-3 py-2">
+                        <span className="font-bold">{game.name}</span>
+                        <span className="text-right text-sm text-[#D4D4D4]">{game.status} | R$ {game.price}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            ))}
           </div>
         ) : (
           <div className="grid min-h-64 content-center">
             <p className="text-lg font-black text-[#F5F5F5]">Sua inscricao aparece aqui.</p>
             <p className="mt-2 text-sm text-[#A3A3A3]">
-              Esta consulta nao mostra lista publica. Ela so libera os dados quando protocolo e WhatsApp conferem.
+              Esta consulta nao mostra lista publica. Ela so libera os dados quando o WhatsApp confere.
             </p>
           </div>
         )}

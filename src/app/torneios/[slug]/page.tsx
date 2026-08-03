@@ -85,6 +85,21 @@ export default async function TournamentSlugPage({ params }: { params: Promise<{
           <p className="text-sm uppercase text-[#A3A3A3]">Chaveamento mata-mata</p>
         </header>
 
+        <div className="bracket-mobile">
+          {rounds.map((round) => (
+            <section className="bracket-mobile-round" key={round.id}>
+              <h2>{round.name}</h2>
+              <div className="grid gap-3">
+                {round.matches.map((match) => <MatchCard key={match.id} match={match} />)}
+              </div>
+            </section>
+          ))}
+          <section className="bracket-mobile-champion">
+            <span>Campeao</span>
+            <strong>{champion ?? "A definir"}</strong>
+          </section>
+        </div>
+
         <div className="world-bracket-viewport pb-4">
           <div className="world-bracket scratched mx-auto">
             <BracketSide rounds={leftRounds} side="left" />
