@@ -982,130 +982,133 @@ a {
     width: 100%;
     overflow-x: auto;
     overflow-y: visible;
-    padding-inline: 0;
-    scroll-padding-inline: 12px;
+    justify-content: flex-start;
+    padding-inline: 10px;
+    scroll-padding-inline: 10px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .world-bracket {
-    grid-template-columns: minmax(0, 1fr) clamp(58px, 18vw, 70px) minmax(0, 1fr);
-    gap: 5px;
-    width: min(100%, 420px);
-    min-height: 470px;
-    padding: 7px;
-    margin-inline: auto;
+    grid-template-columns: 268px 132px 268px;
+    gap: 12px;
+    width: 720px;
+    min-width: 720px;
+    min-height: 560px;
+    padding: 12px;
+    margin-inline: 0;
   }
 
   .world-side {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 7px;
-    min-height: 450px;
+    grid-template-columns: repeat(3, 76px);
+    gap: 14px;
+    min-height: 536px;
   }
 
   .world-round {
-    min-height: 450px;
+    min-height: 536px;
   }
 
   .world-round h2 {
-    font-size: 0.46rem;
+    font-size: 0.55rem;
   }
 
   .world-match-card {
-    height: 54px;
-    padding: 4px;
+    height: 64px;
+    padding: 5px;
   }
 
   .world-match-head {
-    gap: 3px;
-    font-size: 0.42rem;
+    gap: 4px;
+    font-size: 0.5rem;
   }
 
   .world-player-list {
-    gap: 2px;
-    margin-top: 4px;
+    gap: 3px;
+    margin-top: 5px;
   }
 
   .public-player-row {
-    grid-template-columns: 8px minmax(0, 1fr);
-    gap: 3px;
-    min-height: 17px;
-    padding: 2px;
-    font-size: 0.43rem;
+    grid-template-columns: 9px minmax(0, 1fr);
+    gap: 4px;
+    min-height: 20px;
+    padding: 3px;
+    font-size: 0.54rem;
   }
 
   .player-badge {
-    width: 7px;
-    height: 6px;
+    width: 8px;
+    height: 7px;
   }
 
   .world-match-left::after,
   .world-match-right::after {
-    width: 7px;
+    width: 14px;
   }
 
   .world-match-left::after {
-    right: -8px;
+    right: -15px;
   }
 
   .world-match-right::after {
-    left: -8px;
+    left: -15px;
   }
 
   .world-connector {
-    width: 5px;
-    min-height: 18px;
+    width: 9px;
+    min-height: 24px;
   }
 
   .world-connector-left {
-    right: -7px;
+    right: -12px;
   }
 
   .world-connector-right {
-    left: -7px;
+    left: -12px;
   }
 
   .world-connector::before,
   .world-connector::after {
-    width: 5px;
+    width: 9px;
   }
 
   .world-center {
-    min-height: 450px;
-    gap: 8px;
+    min-height: 536px;
+    gap: 10px;
   }
 
   .world-final {
-    gap: 5px;
+    gap: 6px;
   }
 
   .world-final h2 {
-    font-size: 0.52rem;
+    font-size: 0.62rem;
   }
 
   .world-trophy {
-    width: 50px;
-    height: 50px;
-    font-size: 1.8rem;
+    width: 66px;
+    height: 66px;
+    font-size: 2.25rem;
   }
 
   .world-center .world-match-card {
-    height: 62px;
+    height: 72px;
   }
 
   .world-center .public-player-row {
-    min-height: 20px;
-    font-size: 0.46rem;
+    min-height: 22px;
+    font-size: 0.56rem;
   }
 
   .world-center .champion-box {
-    width: 66px;
-    padding: 6px 4px;
+    width: 118px;
+    padding: 8px 6px;
   }
 
   .world-center .champion-box span {
-    font-size: 0.42rem;
+    font-size: 0.54rem;
   }
 
   .world-center .champion-box strong {
-    font-size: 0.5rem;
+    font-size: 0.68rem;
   }
 }
