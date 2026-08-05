@@ -124,8 +124,9 @@ export function recordWinner(matches: GeneratedMatch[], matchId: string, winnerE
 function distributeByes(entries: BracketEntry[], bracketSize: number) {
   const slots: Array<BracketEntry | null> = Array.from({ length: bracketSize }, () => null);
   const order = seedOrder(bracketSize);
-  entries.forEach((entry, index) => {
-    slots[order[index] - 1] = entry;
+  const entriesBySeed = new Map(entries.map((entry, index) => [index + 1, entry]));
+  order.forEach((seed, slotIndex) => {
+    slots[slotIndex] = entriesBySeed.get(seed) ?? null;
   });
   return slots;
 }

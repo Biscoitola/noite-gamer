@@ -29,4 +29,14 @@ describe("single elimination bracket", () => {
     const final = bracket.matches.find((match) => match.id === "r2m1");
     expect(Boolean(final?.participant1EntryId ?? final?.participant2EntryId)).toBe(true);
   });
+
+  it("pareia participantes extras antes de criar BYEs", () => {
+    const bracket = generateSingleEliminationBracket(entries(5));
+    const firstRound = bracket.matches.filter((match) => match.round === 1);
+    const playableMatches = firstRound.filter((match) => match.participant1EntryId && match.participant2EntryId);
+
+    expect(playableMatches).toHaveLength(1);
+    expect(playableMatches[0].participant1EntryId).toBe("p4");
+    expect(playableMatches[0].participant2EntryId).toBe("p5");
+  });
 });
