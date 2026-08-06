@@ -1,7 +1,7 @@
 import { Container, Panel } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateTournamentAction, winnerAction } from "./actions";
+import { generateTournamentAction, resetTournamentsAction, winnerAction } from "./actions";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -43,14 +43,26 @@ export default async function AdminTournamentsPage({ searchParams }: { searchPar
           {error}
         </div>
       ) : null}
-      <Panel>
-        <form action={generateTournamentAction} className="flex flex-wrap gap-3">
-          <select name="gameId" className="min-h-12 border border-[#FFD400]/35 bg-black px-3">
-            {games.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}
-          </select>
-          <label className="flex items-center gap-2"><input name="onlyCheckedIn" type="checkbox" /> Somente check-in</label>
-          <button className="min-h-12 bg-[#FFD400] px-4 font-black text-black">Gerar chave</button>
-        </form>
+      <Panel className="grid gap-4">
+        <div>
+          <h2 className="text-xl font-black text-[#FFD400]">Gerar chave por presenca</h2>
+          <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
+            A chave usa somente jogadores com check-in confirmado no jogo selecionado.
+          </p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
+          <form action={generateTournamentAction} className="flex flex-wrap gap-3">
+            <select name="gameId" className="min-h-12 border border-[#FFD400]/35 bg-black px-3">
+              {games.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}
+            </select>
+            <button className="min-h-12 bg-[#FFD400] px-4 font-black text-black">Gerar chave com presentes</button>
+          </form>
+          <form action={resetTournamentsAction}>
+            <button className="min-h-12 border border-red-500/60 px-4 font-black uppercase text-red-200 hover:bg-red-500/10">
+              Zerar chaves e ganhadores
+            </button>
+          </form>
+        </div>
       </Panel>
 
       <Panel className="grid gap-3">

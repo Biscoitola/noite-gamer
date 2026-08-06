@@ -18,32 +18,42 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
       },
       include: { registration: { include: { participant: true } }, entries: true, checkIns: true }
     });
-    const existingEntries = await tx.tournamentEntry.findMany({
-      where: { tournamentId: tournament.id },
-      select: { seed: true, registrationItemId: true }
-    });
-    const existingItemIds = new Set(existingEntries.map((entry) => entry.registrationItemId));
-    const maxSeed = existingEntries.reduce((current, entry) => Math.max(current, entry.seed), 0);
+    await tx.match.deleteMany({ where: { tournamentId: tournament.id } });
+    await tx.tournamentRound.deleteMany({ where: { tournamentId: tournament.id } });
+    await tx.tournamentEntry.deleteMany({ where: { tournamentId: tournament.id } });
     await tx.tournamentEntry.createMany({
-      data: items
-        .filter((item) => !existingItemIds.has(item.id))
-        .map((item, index) => ({
-          tournamentId: tournament.id,
-          registrationItemId: item.id,
-          participantId: item.registration.participantId,
-          seed: maxSeed + index + 1,
-          checkedIn: item.checkIns?.some((checkIn) => checkIn.canceledAt === null) ?? false
-        })),
+      data: items.map((item, index) => ({
+        tournamentId: tournament.id,
+        registrationItemId: item.id,
+        participantId: item.registration.participantId,
+        seed: index + 1,
+        checkedIn: item.checkIns?.some((checkIn) => checkIn.canceledAt === null) ?? false
+      })),
       skipDuplicates: true
     });
+    if (items.length < 1) {
+      await tx.tournament.update({
+        where: { id: tournament.id },
+        data: {
+          status: "DRAFT",
+          public: false,
+          bracketSize: null,
+          generatedAt: null,
+          startedAt: null,
+          finishedAt: null,
+          championEntryId: null,
+          runnerUpEntryId: null,
+          thirdPlaceEntryId: null
+        }
+      });
+      throw new Error("Nenhum jogador com check-in confirmado para este jogo.");
+    }
     const entries = await tx.tournamentEntry.findMany({
       where: { tournamentId: tournament.id },
       include: { participant: true },
       orderBy: { seed: "asc" }
     });
     const bracket = generateSingleEliminationBracket(entries.map((entry) => ({ id: entry.id, seed: entry.seed, publicName: entry.participant.publicName })));
-    await tx.match.deleteMany({ where: { tournamentId: tournament.id } });
-    await tx.tournamentRound.deleteMany({ where: { tournamentId: tournament.id } });
     const roundMap = new Map<number, string>();
     for (const round of bracket.rounds) {
       const created = await tx.tournamentRound.create({ data: { tournamentId: tournament.id, number: round.number, name: round.name, order: round.order } });
@@ -72,9 +82,52 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
     }
     await tx.tournament.update({
       where: { id: tournament.id },
-      data: { status: "PUBLISHED", public: true, bracketSize: bracket.bracketSize, generatedAt: new Date() }
+      data: {
+        status: "PUBLISHED",
+        public: true,
+        bracketSize: bracket.bracketSize,
+        generatedAt: new Date(),
+        startedAt: null,
+        finishedAt: null,
+        championEntryId: null,
+        runnerUpEntryId: null,
+        thirdPlaceEntryId: null
+      }
     });
     return tournament.id;
+  });
+}
+
+export async function resetTournamentState(eventId?: string) {
+  await prisma.$transaction(async (tx) => {
+    const tournamentWhere = eventId ? { eventId } : {};
+    const tournaments = await tx.tournament.findMany({ where: tournamentWhere, select: { id: true } });
+    const tournamentIds = tournaments.map((tournament) => tournament.id);
+
+    if (tournamentIds.length > 0) {
+      await tx.match.deleteMany({ where: { tournamentId: { in: tournamentIds } } });
+      await tx.tournamentRound.deleteMany({ where: { tournamentId: { in: tournamentIds } } });
+      await tx.tournamentEntry.deleteMany({ where: { tournamentId: { in: tournamentIds } } });
+      await tx.tournament.updateMany({
+        where: { id: { in: tournamentIds } },
+        data: {
+          status: "DRAFT",
+          public: false,
+          bracketSize: null,
+          generatedAt: null,
+          startedAt: null,
+          finishedAt: null,
+          championEntryId: null,
+          runnerUpEntryId: null,
+          thirdPlaceEntryId: null
+        }
+      });
+    }
+
+    await tx.prize.updateMany({
+      where: eventId ? { eventId } : {},
+      data: { winnerRegistrationId: null, drawnAt: null }
+    });
   });
 }
 

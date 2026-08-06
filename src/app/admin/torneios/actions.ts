@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { ensureTournamentForGame, registerMatchWinner } from "@/lib/tournaments/service";
+import { ensureTournamentForGame, registerMatchWinner, resetTournamentState } from "@/lib/tournaments/service";
 
 export async function generateTournamentAction(formData: FormData) {
   await requireAdmin();
   try {
-    await ensureTournamentForGame(String(formData.get("gameId")), formData.get("onlyCheckedIn") === "on");
+    await ensureTournamentForGame(String(formData.get("gameId")), true);
     revalidatePath("/admin/torneios");
     revalidatePath("/torneios");
   } catch (error) {
@@ -29,4 +29,19 @@ export async function winnerAction(formData: FormData) {
     redirect(`/admin/torneios?error=${encodeURIComponent(message)}`);
   }
   redirect("/admin/torneios?success=Vencedor registrado.");
+}
+
+export async function resetTournamentsAction() {
+  await requireAdmin();
+  try {
+    await resetTournamentState();
+    revalidatePath("/admin/torneios");
+    revalidatePath("/torneios");
+    revalidatePath("/admin/sorteios");
+    revalidatePath("/sorteios");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nao foi possivel zerar os torneios.";
+    redirect(`/admin/torneios?error=${encodeURIComponent(message)}`);
+  }
+  redirect("/admin/torneios?success=Torneios, chaves e sorteios zerados.");
 }
