@@ -94,6 +94,7 @@ a {
   top: 0;
   display: grid;
   height: 100vh;
+  min-height: 0;
   grid-template-rows: auto 1fr auto;
   gap: 18px;
   border-right: 1px solid rgba(180, 92, 255, 0.28);
@@ -133,6 +134,23 @@ a {
   display: grid;
   align-content: start;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-color: rgba(255, 212, 0, 0.65) rgba(180, 92, 255, 0.12);
+  scrollbar-width: thin;
+}
+
+.admin-nav::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-nav::-webkit-scrollbar-track {
+  background: rgba(180, 92, 255, 0.12);
+}
+
+.admin-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 212, 0, 0.65);
 }
 
 .admin-nav-link {
@@ -220,11 +238,14 @@ a {
   .admin-sidebar {
     position: static;
     height: auto;
+    max-height: none;
     grid-template-rows: auto auto auto;
   }
 
   .admin-nav {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    overflow: visible;
+    padding-right: 0;
   }
 }
 
