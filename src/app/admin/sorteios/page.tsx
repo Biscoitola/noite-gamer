@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Container, Panel } from "@/components/ui";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { clearPrizeWinnerAction, drawPrizeAction } from "../patrocinadores/actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminRafflesPage({ searchParams }: { searchParams: Promise<{ success?: string; error?: string }> }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const prizes = await prisma.prize.findMany({
     include: {

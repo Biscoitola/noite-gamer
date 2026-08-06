@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const [total, pending, confirmed, paid, games, latest] = await Promise.all([
     prisma.registration.count(),
     prisma.registration.count({ where: { status: "AGUARDANDO_PAGAMENTO" } }),
@@ -25,11 +25,17 @@ export default async function AdminPage() {
         <Panel><span>Receita</span><strong className="block text-3xl text-[#FFD400]">R$ {Number(paid._sum.amount ?? 0).toFixed(2)}</strong></Panel>
       </section>
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <AdminShortcut href="/admin/inscricoes" label="Inscricoes" />
-        <AdminShortcut href="/admin/cupons" label="Cupons" />
-        <AdminShortcut href="/admin/sorteios" label="Sorteios" />
-        <AdminShortcut href="/admin/configuracoes" label="Configuracoes" />
-        <AdminShortcut href="/admin/patrocinadores" label="Patrocinadores" />
+        <AdminShortcut href="/admin/torneios" label="Torneios" />
+        {admin.role === "ADMIN" ? (
+          <>
+            <AdminShortcut href="/admin/inscricoes" label="Inscricoes" />
+            <AdminShortcut href="/admin/cupons" label="Cupons" />
+            <AdminShortcut href="/admin/sorteios" label="Sorteios" />
+            <AdminShortcut href="/admin/configuracoes" label="Configuracoes" />
+            <AdminShortcut href="/admin/patrocinadores" label="Patrocinadores" />
+            <AdminShortcut href="/admin/usuarios" label="Usuarios" />
+          </>
+        ) : null}
       </section>
       <Panel>
         <h2 className="text-xl font-black">Vagas por modalidade</h2>

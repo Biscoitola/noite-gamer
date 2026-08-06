@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
   DEFAULT_HERO_POSTER_URL,
@@ -16,7 +16,7 @@ import {
 } from "@/lib/home-settings";
 
 export async function createEditionAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const name = String(formData.get("name") || "Noite Gamer");
   const edition = String(formData.get("edition") || "Nova edicao");
   const startsAt = buildLocalDateTime(formData, "eventDate", "eventTime", "19:00");
@@ -48,7 +48,7 @@ export async function createEditionAction(formData: FormData) {
 }
 
 export async function createGameAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const eventId = String(formData.get("eventId"));
   const name = String(formData.get("name"));
   const slug = slugify(String(formData.get("slug") || name));
@@ -71,7 +71,7 @@ export async function createGameAction(formData: FormData) {
 }
 
 export async function updateGameAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const gameId = String(formData.get("gameId") || "");
   const name = String(formData.get("name") || "").trim();
   const rawSlug = String(formData.get("slug") || "").trim();
@@ -93,7 +93,7 @@ export async function updateGameAction(formData: FormData) {
 }
 
 export async function toggleGameStatusAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const gameId = String(formData.get("gameId") || "");
   const isActive = formData.get("isActive") === "true";
   await prisma.game.update({
@@ -104,7 +104,7 @@ export async function toggleGameStatusAction(formData: FormData) {
 }
 
 export async function deleteGameAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const gameId = String(formData.get("gameId") || "");
   const [registrationItems, tournaments] = await Promise.all([
     prisma.registrationItem.count({ where: { gameId } }),
@@ -124,7 +124,7 @@ export async function deleteGameAction(formData: FormData) {
 }
 
 export async function updateHomeHeroPosterAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const imageUrl = String(formData.get("imageUrl") || "").trim();
   if (imageUrl && !isAllowedImageSource(imageUrl)) {
     redirectWithConfigMessage("error", "Use uma URL publica https:// ou um caminho interno iniciado com /.");
@@ -142,7 +142,7 @@ export async function updateHomeHeroPosterAction(formData: FormData) {
 }
 
 export async function updateHomeCarouselSettingsAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const config = await getHomeCarouselConfig();
   config.speedSeconds = Number(formData.get("speedSeconds") || DEFAULT_HOME_CAROUSEL_CONFIG.speedSeconds);
   await saveHomeCarouselConfig(config);
@@ -150,7 +150,7 @@ export async function updateHomeCarouselSettingsAction(formData: FormData) {
 }
 
 export async function createHomeCarouselImageAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const title = String(formData.get("title") || "").trim();
   const imageUrl = String(formData.get("imageUrl") || "").trim();
   const linkUrl = String(formData.get("linkUrl") || "").trim();
@@ -178,7 +178,7 @@ export async function createHomeCarouselImageAction(formData: FormData) {
 }
 
 export async function updateHomeCarouselImageAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const imageId = String(formData.get("imageId") || "");
   const title = String(formData.get("title") || "").trim();
   const imageUrl = String(formData.get("imageUrl") || "").trim();
@@ -209,7 +209,7 @@ export async function updateHomeCarouselImageAction(formData: FormData) {
 }
 
 export async function deleteHomeCarouselImageAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const imageId = String(formData.get("imageId") || "");
   const config = await getHomeCarouselConfig();
   config.images = config.images.filter((image) => image.id !== imageId);

@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function checkInAction(formData: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdminRole("ADMIN");
   const registrationItemId = String(formData.get("registrationItemId") || "");
   const protocol = String(formData.get("protocol") || "");
   const item = await prisma.registrationItem.findFirst({
@@ -24,7 +24,7 @@ export async function checkInAction(formData: FormData) {
 }
 
 export async function undoCheckInAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const registrationItemId = String(formData.get("registrationItemId") || "");
   if (!registrationItemId) return;
   await prisma.checkIn.updateMany({

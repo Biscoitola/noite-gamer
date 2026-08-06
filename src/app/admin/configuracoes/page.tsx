@@ -1,5 +1,5 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
 import {
@@ -18,7 +18,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const successMessage = readSearchParam(params?.success);
   const errorMessage = readSearchParam(params?.error);

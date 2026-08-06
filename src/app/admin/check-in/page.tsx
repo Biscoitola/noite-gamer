@@ -1,5 +1,5 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { checkInAction, undoCheckInAction } from "./actions";
 
@@ -10,7 +10,7 @@ export default async function CheckInPage({
 }: {
   searchParams: Promise<{ busca?: string; jogo?: string; presenca?: string }>;
 }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const search = (params.busca || "").trim();
   const selectedGame = params.jogo || "";

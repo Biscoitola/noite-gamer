@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { AdminRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { createPublicToken, hashToken, verifyPassword } from "@/lib/security";
 
@@ -56,5 +57,11 @@ export async function getCurrentAdmin() {
 export async function requireAdmin() {
   const admin = await getCurrentAdmin();
   if (!admin) redirect("/admin/login");
+  return admin;
+}
+
+export async function requireAdminRole(...roles: AdminRole[]) {
+  const admin = await requireAdmin();
+  if (!roles.includes(admin.role)) redirect("/admin");
   return admin;
 }

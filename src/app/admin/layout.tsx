@@ -1,18 +1,20 @@
+import type { AdminRole } from "@prisma/client";
 import Link from "next/link";
 import { getCurrentAdmin } from "@/lib/auth";
 import { logoutAction } from "./login/actions";
 
 const adminLinks = [
-  { href: "/admin", label: "Dashboard", code: "DB" },
-  { href: "/admin/inscricoes", label: "Inscricoes", code: "IN" },
-  { href: "/admin/pagamentos", label: "Pagamentos", code: "PX" },
-  { href: "/admin/relatorios/inscritos", label: "Relatorios", code: "RP" },
-  { href: "/admin/check-in", label: "Check-in", code: "CK" },
-  { href: "/admin/torneios", label: "Torneios", code: "TR" },
-  { href: "/admin/cupons", label: "Cupons", code: "CP" },
-  { href: "/admin/sorteios", label: "Sorteios", code: "ST" },
-  { href: "/admin/patrocinadores", label: "Patrocinadores", code: "PT" },
-  { href: "/admin/configuracoes", label: "Configuracoes", code: "CF" }
+  { href: "/admin", label: "Dashboard", code: "DB", roles: ["ADMIN", "STAFF"] },
+  { href: "/admin/inscricoes", label: "Inscricoes", code: "IN", roles: ["ADMIN"] },
+  { href: "/admin/pagamentos", label: "Pagamentos", code: "PX", roles: ["ADMIN"] },
+  { href: "/admin/relatorios/inscritos", label: "Relatorios", code: "RP", roles: ["ADMIN"] },
+  { href: "/admin/check-in", label: "Check-in", code: "CK", roles: ["ADMIN"] },
+  { href: "/admin/torneios", label: "Torneios", code: "TR", roles: ["ADMIN", "STAFF"] },
+  { href: "/admin/cupons", label: "Cupons", code: "CP", roles: ["ADMIN"] },
+  { href: "/admin/sorteios", label: "Sorteios", code: "ST", roles: ["ADMIN"] },
+  { href: "/admin/patrocinadores", label: "Patrocinadores", code: "PT", roles: ["ADMIN"] },
+  { href: "/admin/configuracoes", label: "Configuracoes", code: "CF", roles: ["ADMIN"] },
+  { href: "/admin/usuarios", label: "Usuarios", code: "US", roles: ["ADMIN"] }
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </Link>
 
         <nav className="admin-nav">
-          {adminLinks.map((link) => (
+          {adminLinks.filter((link) => canSeeLink(admin.role, link.roles)).map((link) => (
             <Link className="admin-nav-link focus-ring" href={link.href} key={link.href}>
               <span>{link.code}</span>
               {link.label}
@@ -60,4 +62,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
     </div>
   );
+}
+
+function canSeeLink(role: AdminRole, roles: string[]) {
+  return roles.includes(role);
 }

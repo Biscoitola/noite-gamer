@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { toCsv } from "@/lib/exports";
 
 export async function GET() {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const registrations = await prisma.registration.findMany({ include: { participant: true, items: { include: { game: true } } } });
   const csv = toCsv(registrations.map((item) => ({
     protocolo: item.protocol,

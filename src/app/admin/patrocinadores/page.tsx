@@ -1,12 +1,12 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { clearPrizeWinnerAction, createPrizeAction, createSponsorAction, drawPrizeAction, updateSponsorCarouselAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSponsorsPage() {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const events = await prisma.event.findMany({ orderBy: { startsAt: "desc" } });
   const sponsors = await prisma.sponsor.findMany({
     include: {

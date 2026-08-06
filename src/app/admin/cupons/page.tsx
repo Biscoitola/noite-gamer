@@ -1,12 +1,12 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createCouponAction, updateCouponAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCouponsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const events = await prisma.event.findMany({ orderBy: { startsAt: "desc" } });
   const coupons = await prisma.discountCoupon.findMany({

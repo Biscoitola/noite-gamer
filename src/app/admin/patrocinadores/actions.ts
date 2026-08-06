@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { randomInt } from "node:crypto";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function createSponsorAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const eventId = String(formData.get("eventId") || "");
   const name = String(formData.get("name") || "").trim();
   const logoUrl = String(formData.get("logoUrl") || "").trim();
@@ -30,7 +30,7 @@ export async function createSponsorAction(formData: FormData) {
 }
 
 export async function updateSponsorCarouselAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const sponsorId = String(formData.get("sponsorId") || "");
   const sponsor = await prisma.sponsor.update({
     where: { id: sponsorId },
@@ -46,7 +46,7 @@ export async function updateSponsorCarouselAction(formData: FormData) {
 }
 
 export async function createPrizeAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const sponsorId = String(formData.get("sponsorId") || "");
   const sponsor = await prisma.sponsor.findUniqueOrThrow({ where: { id: sponsorId } });
   const title = String(formData.get("title") || "").trim();
@@ -69,7 +69,7 @@ export async function createPrizeAction(formData: FormData) {
 }
 
 export async function drawPrizeAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const prizeId = String(formData.get("prizeId") || "");
   const returnTo = getReturnTo(formData);
   const prize = await prisma.prize.findUniqueOrThrow({ where: { id: prizeId } });
@@ -103,7 +103,7 @@ export async function drawPrizeAction(formData: FormData) {
 }
 
 export async function clearPrizeWinnerAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const returnTo = getReturnTo(formData);
   const prize = await prisma.prize.update({
     where: { id: String(formData.get("prizeId") || "") },

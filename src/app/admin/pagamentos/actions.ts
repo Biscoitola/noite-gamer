@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { reconcilePdf } from "@/lib/payments/pdf-reconciliation";
 
 export async function importPdfAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const file = formData.get("pdfFile");
   if (!(file instanceof File)) throw new Error("Arquivo PDF nao enviado.");
   const arrayBuffer = await file.arrayBuffer();

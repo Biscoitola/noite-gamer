@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function cancelRegistrationAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const registrationId = String(formData.get("registrationId") || "");
   if (!registrationId) {
     redirect("/admin/inscricoes?error=Inscricao invalida.");
@@ -50,7 +50,7 @@ export async function cancelRegistrationAction(formData: FormData) {
 }
 
 export async function confirmRegistrationManuallyAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const registrationId = String(formData.get("registrationId") || "");
   const returnTo = getSafeReturnPath(String(formData.get("returnTo") || "/admin/inscricoes"));
   if (!registrationId) {

@@ -1,6 +1,6 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { PrintButton } from "@/components/print-button";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export default async function RegisteredByGameReportPage({
 }: {
   searchParams: Promise<{ jogo?: string; busca?: string; status?: string }>;
 }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const games = await prisma.game.findMany({ orderBy: { name: "asc" }, include: { event: true } });
   const selectedGameId = params.jogo || games[0]?.id || "";

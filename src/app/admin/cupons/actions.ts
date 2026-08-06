@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function createCouponAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const eventId = String(formData.get("eventId") || "");
   const code = normalizeCouponCode(String(formData.get("code") || ""));
   const value = Number(formData.get("value") || 0);
@@ -39,7 +39,7 @@ export async function createCouponAction(formData: FormData) {
 }
 
 export async function updateCouponAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const couponId = String(formData.get("couponId") || "");
   const startsAt = readDateTime(formData, "startsAt") ?? new Date();
   const expiresAt = readExpiresAt(formData, startsAt);

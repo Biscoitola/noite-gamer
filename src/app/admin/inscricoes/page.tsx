@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Container, Panel } from "@/components/ui";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { cancelRegistrationAction, confirmRegistrationManuallyAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminRegistrationsPage({ searchParams }: { searchParams?: Promise<{ success?: string; error?: string }> }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const registrations = await prisma.registration.findMany({
     orderBy: { createdAt: "desc" },

@@ -1,13 +1,13 @@
 import { Container, Panel } from "@/components/ui";
 import { OfxImportForm } from "@/components/ofx-import-form";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { confirmRegistrationManuallyAction } from "../inscricoes/actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function PaymentsPage({ searchParams }: { searchParams?: Promise<{ success?: string; error?: string }> }) {
-  await requireAdmin();
+  await requireAdminRole("ADMIN");
   const params = await searchParams;
   const payments = await prisma.payment.findMany({
     orderBy: { createdAt: "desc" },
