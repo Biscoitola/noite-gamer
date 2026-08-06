@@ -42,7 +42,7 @@ upsert_jg AS (
         "carouselOrder" = EXCLUDED."carouselOrder",
         "isActive" = EXCLUDED."isActive",
         "updatedAt" = CURRENT_TIMESTAMP
-    RETURNING "id", "eventId"
+    RETURNING "id", "eventId", "name"
 ),
 upsert_guricell AS (
     INSERT INTO "Sponsor" (
@@ -84,7 +84,7 @@ upsert_guricell AS (
         "carouselOrder" = EXCLUDED."carouselOrder",
         "isActive" = EXCLUDED."isActive",
         "updatedAt" = CURRENT_TIMESTAMP
-    RETURNING "id", "eventId"
+    RETURNING "id", "eventId", "name"
 ),
 known_sponsors AS (
     SELECT "id", "eventId", "name"
