@@ -27,6 +27,7 @@ export default async function AdminPage() {
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <AdminShortcut href="/admin/inscricoes" label="Inscricoes" />
         <AdminShortcut href="/admin/cupons" label="Cupons" />
+        <AdminShortcut href="/admin/sorteios" label="Sorteios" />
         <AdminShortcut href="/admin/configuracoes" label="Configuracoes" />
         <AdminShortcut href="/admin/patrocinadores" label="Patrocinadores" />
       </section>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { randomInt } from "node:crypto";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
@@ -69,6 +70,7 @@ export async function createPrizeAction(formData: FormData) {
 export async function drawPrizeAction(formData: FormData) {
   await requireAdmin();
   const prizeId = String(formData.get("prizeId") || "");
+  const returnTo = getReturnTo(formData);
   const prize = await prisma.prize.findUniqueOrThrow({ where: { id: prizeId } });
   const registrations = await prisma.registration.findMany({
     where: {
@@ -78,7 +80,9 @@ export async function drawPrizeAction(formData: FormData) {
     include: { participant: true },
     orderBy: { createdAt: "asc" }
   });
-  if (registrations.length === 0) throw new Error("Nao ha inscricoes confirmadas para sortear.");
+  if (registrations.length === 0) {
+    redirectWithMessage(returnTo, "error", "Nao ha inscricoes confirmadas para sortear.");
+  }
 
   const winner = registrations[randomInt(registrations.length)];
   await prisma.prize.update({
@@ -86,15 +90,18 @@ export async function drawPrizeAction(formData: FormData) {
     data: { winnerRegistrationId: winner.id, drawnAt: new Date() }
   });
   revalidateSponsorPages(prize.sponsorId);
+  redirectWithMessage(returnTo, "success", `Sorteio realizado: ${winner.participant.publicName}.`);
 }
 
 export async function clearPrizeWinnerAction(formData: FormData) {
   await requireAdmin();
+  const returnTo = getReturnTo(formData);
   const prize = await prisma.prize.update({
     where: { id: String(formData.get("prizeId") || "") },
     data: { winnerRegistrationId: null, drawnAt: null }
   });
   revalidateSponsorPages(prize.sponsorId);
+  redirectWithMessage(returnTo, "success", "Ganhador removido do premio.");
 }
 
 function revalidateSponsorPages(sponsorId?: string) {
@@ -103,4 +110,13 @@ function revalidateSponsorPages(sponsorId?: string) {
   if (sponsorId) revalidatePath(`/patrocinadores/${sponsorId}`);
   revalidatePath("/sorteios");
   revalidatePath("/minha-inscricao");
+}
+
+function getReturnTo(formData: FormData) {
+  const value = String(formData.get("returnTo") || "/admin/patrocinadores");
+  return value.startsWith("/admin/") ? value : "/admin/patrocinadores";
+}
+
+function redirectWithMessage(returnTo: string, type: "success" | "error", message: string): never {
+  redirect(`${returnTo}?${type}=${encodeURIComponent(message)}`);
 }

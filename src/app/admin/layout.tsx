@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCurrentAdmin } from "@/lib/auth";
 import { logoutAction } from "./login/actions";
 
 const adminLinks = [
@@ -9,11 +10,16 @@ const adminLinks = [
   { href: "/admin/check-in", label: "Check-in", code: "CK" },
   { href: "/admin/torneios", label: "Torneios", code: "TR" },
   { href: "/admin/cupons", label: "Cupons", code: "CP" },
+  { href: "/admin/sorteios", label: "Sorteios", code: "ST" },
   { href: "/admin/patrocinadores", label: "Patrocinadores", code: "PT" },
   { href: "/admin/configuracoes", label: "Configuracoes", code: "CF" }
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const admin = await getCurrentAdmin();
+
+  if (!admin) return <>{children}</>;
+
   return (
     <div className="admin-shell min-h-screen">
       <aside className="admin-sidebar no-print">
