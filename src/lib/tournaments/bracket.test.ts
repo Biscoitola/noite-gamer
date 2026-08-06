@@ -20,33 +20,41 @@ describe("single elimination bracket", () => {
     const bracket = generateSingleEliminationBracket(entries(4));
     recordWinner(bracket.matches, "r1m1", "p1");
     const next = bracket.matches.find((match) => match.id === "r2m1");
-    expect(next?.participant1EntryId).toBe("p1");
+    expect(next?.participant1EntryId ?? next?.participant2EntryId).toBe("p1");
   });
 
-  it("avanca participante contra BYE", () => {
+  it("deixa apenas um participante sem oponente quando a quantidade e impar", () => {
     const bracket = generateSingleEliminationBracket(entries(3));
     expect(bracket.matches.some((match) => match.status === "BYE")).toBe(false);
-    const final = bracket.matches.find((match) => match.id === "r2m1");
-    expect(final?.participant1EntryId).toBe("p1");
-    expect(final?.participant2EntryId).toBeNull();
+    const firstRound = bracket.matches.filter((match) => match.round === 1);
+
+    expect(firstRound).toHaveLength(1);
+    expect(firstRound[0].participant1EntryId).toBeTruthy();
+    expect(firstRound[0].participant2EntryId).toBeTruthy();
   });
 
-  it("mostra apenas jogos reais na fase preliminar quando ha BYEs", () => {
+  it("pareia todos os participantes possiveis quando a quantidade e impar", () => {
     const bracket = generateSingleEliminationBracket(entries(5));
     const firstRound = bracket.matches.filter((match) => match.round === 1);
     const playableMatches = firstRound.filter((match) => match.participant1EntryId && match.participant2EntryId);
 
-    expect(firstRound).toHaveLength(1);
-    expect(playableMatches).toHaveLength(1);
-    expect(playableMatches[0].participant1EntryId).toBe("p4");
-    expect(playableMatches[0].participant2EntryId).toBe("p5");
+    expect(firstRound).toHaveLength(2);
+    expect(playableMatches).toHaveLength(2);
   });
 
   it("nao cria dois jogos com um jogador esperando se eles podem se enfrentar", () => {
     const bracket = generateSingleEliminationBracket(entries(6));
     const firstRound = bracket.matches.filter((match) => match.round === 1);
 
-    expect(firstRound).toHaveLength(2);
+    expect(firstRound).toHaveLength(3);
+    expect(firstRound.every((match) => match.participant1EntryId && match.participant2EntryId)).toBe(true);
+  });
+
+  it("com 12 participantes cria 6 jogos iniciais sem A definir", () => {
+    const bracket = generateSingleEliminationBracket(entries(12));
+    const firstRound = bracket.matches.filter((match) => match.round === 1);
+
+    expect(firstRound).toHaveLength(6);
     expect(firstRound.every((match) => match.participant1EntryId && match.participant2EntryId)).toBe(true);
   });
 });

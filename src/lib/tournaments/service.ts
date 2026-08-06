@@ -86,9 +86,15 @@ export async function ensurePublicTournamentForGameSlug(slug: string) {
   if (confirmedCount < 1) return null;
   const existingTournament = await prisma.tournament.findUnique({
     where: { eventId_gameId: { eventId: game.eventId, gameId: game.id } },
-    include: { _count: { select: { matches: { where: { status: "FINISHED" } } } } }
+    include: {
+      _count: {
+        select: {
+          matches: { where: { status: "FINISHED" } }
+        }
+      }
+    }
   });
-  if (existingTournament && (existingTournament.status === "STARTED" || existingTournament.status === "FINISHED" || existingTournament._count.matches > 0)) {
+  if (existingTournament && (existingTournament.status === "FINISHED" || existingTournament._count.matches > 0)) {
     return game.slug;
   }
   await ensureTournamentForGame(game.id);

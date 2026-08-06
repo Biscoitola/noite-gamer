@@ -41,159 +41,130 @@ export function generateSingleEliminationBracket(entries: BracketEntry[]): Gener
 
   const seeded = [...entries].sort((a, b) => (a.seed ?? 9999) - (b.seed ?? 9999));
   const bracketSize = nextPowerOfTwo(seeded.length);
-  const roundCount = Math.log2(bracketSize);
-  if (seeded.length > 1 && seeded.length < bracketSize) {
-    return generateCompactBracket(seeded, bracketSize, roundCount);
-  }
-  const slots = distributeByes(seeded, bracketSize);
-  const rounds = Array.from({ length: roundCount }, (_, index) => ({
-    number: index + 1,
-    name: roundName(index + 1, roundCount),
-    order: index + 1
-  }));
-
-  const matches: GeneratedMatch[] = [];
-  const matchId = (round: number, position: number) => `r${round}m${position}`;
-
-  for (let position = 1; position <= bracketSize / 2; position += 1) {
-    const p1 = slots[(position - 1) * 2] ?? null;
-    const p2 = slots[(position - 1) * 2 + 1] ?? null;
-    const winner = p1 && !p2 ? p1.id : !p1 && p2 ? p2.id : null;
-    matches.push({
-      id: matchId(1, position),
-      round: 1,
-      position,
-      participant1EntryId: p1?.id ?? null,
-      participant2EntryId: p2?.id ?? null,
-      winnerEntryId: winner,
-      nextMatchId: roundCount > 1 ? matchId(2, Math.ceil(position / 2)) : null,
-      nextSlot: roundCount > 1 ? (((position - 1) % 2) + 1 as 1 | 2) : null,
-      status: winner ? "BYE" : "READY"
-    });
-  }
-
-  for (let round = 2; round <= roundCount; round += 1) {
-    const matchCount = bracketSize / 2 ** round;
-    for (let position = 1; position <= matchCount; position += 1) {
-      matches.push({
-        id: matchId(round, position),
-        round,
-        position,
-        participant1EntryId: null,
-        participant2EntryId: null,
-        winnerEntryId: null,
-        nextMatchId: round < roundCount ? matchId(round + 1, Math.ceil(position / 2)) : null,
-        nextSlot: round < roundCount ? (((position - 1) % 2) + 1 as 1 | 2) : null,
-        status: "PENDING"
-      });
-    }
-  }
-
-  for (const byeMatch of matches.filter((match) => match.status === "BYE")) {
-    advanceWinner(matches, byeMatch.id, byeMatch.winnerEntryId);
-  }
-
-  return { bracketSize, rounds, matches };
+  return generateRoundByRoundBracket(seeded, bracketSize);
 }
 
 type RoundEntrant =
   | { type: "entry"; entryId: string }
   | { type: "match"; matchId: string };
 
-function generateCompactBracket(entries: BracketEntry[], bracketSize: number, roundCount: number): GeneratedBracket {
+type PlannedMatch = {
+  id: string;
+  round: number;
+  position: number;
+  entrant1: RoundEntrant;
+  entrant2: RoundEntrant;
+  nextMatchId: string | null;
+  nextSlot: 1 | 2 | null;
+};
+
+function generateRoundByRoundBracket(entries: BracketEntry[], bracketSize: number): GeneratedBracket {
+  if (entries.length === 1) {
+    return {
+      bracketSize,
+      rounds: [{ number: 1, name: "Final", order: 1 }],
+      matches: [
+        {
+          id: matchId(1, 1),
+          round: 1,
+          position: 1,
+          participant1EntryId: entries[0].id,
+          participant2EntryId: null,
+          winnerEntryId: entries[0].id,
+          nextMatchId: null,
+          nextSlot: null,
+          status: "BYE"
+        }
+      ]
+    };
+  }
+
+  const plannedMatches: PlannedMatch[] = [];
+  let round = 1;
+  let entrants = pairSeededEntries(entries).map<RoundEntrant>((entry) => ({ type: "entry", entryId: entry.id }));
+
+  while (entrants.length > 1) {
+    const nextEntrants: RoundEntrant[] = [];
+    let position = 1;
+    for (let index = 0; index + 1 < entrants.length; index += 2) {
+      const id = matchId(round, position);
+      plannedMatches.push({
+        id,
+        round,
+        position,
+        entrant1: entrants[index],
+        entrant2: entrants[index + 1],
+        nextMatchId: null,
+        nextSlot: null
+      });
+      nextEntrants.push({ type: "match", matchId: id });
+      position += 1;
+    }
+    if (entrants.length % 2 === 1) {
+      nextEntrants.push(entrants[entrants.length - 1]);
+    }
+    entrants = nextEntrants;
+    round += 1;
+  }
+
+  for (const match of plannedMatches) {
+    const entrant1 = match.entrant1;
+    const entrant2 = match.entrant2;
+    if (entrant1.type === "match") {
+      const source = plannedMatches.find((candidate) => candidate.id === entrant1.matchId);
+      if (source) {
+        source.nextMatchId = match.id;
+        source.nextSlot = 1;
+      }
+    }
+    if (entrant2.type === "match") {
+      const source = plannedMatches.find((candidate) => candidate.id === entrant2.matchId);
+      if (source) {
+        source.nextMatchId = match.id;
+        source.nextSlot = 2;
+      }
+    }
+  }
+
+  const roundCount = Math.max(...plannedMatches.map((match) => match.round));
   const rounds = Array.from({ length: roundCount }, (_, index) => ({
     number: index + 1,
     name: roundName(index + 1, roundCount),
     order: index + 1
   }));
-  const matches: GeneratedMatch[] = [];
-  const matchId = (round: number, position: number) => `r${round}m${position}`;
-  const byes = bracketSize - entries.length;
-  const preliminaryEntries = entries.slice(byes);
-  const preliminaryPairs = pairPreliminaryEntries(preliminaryEntries);
-  const entrantsBySeed = new Map<number, RoundEntrant>();
 
-  entries.slice(0, byes).forEach((entry, index) => {
-    entrantsBySeed.set(index + 1, { type: "entry", entryId: entry.id });
-  });
-
-  preliminaryPairs.forEach((pair, index) => {
-    const id = matchId(1, index + 1);
-    matches.push({
-      id,
-      round: 1,
-      position: index + 1,
-      participant1EntryId: pair[0].id,
-      participant2EntryId: pair[1].id,
+  return {
+    bracketSize,
+    rounds,
+    matches: plannedMatches.map((match) => ({
+      id: match.id,
+      round: match.round,
+      position: match.position,
+      participant1EntryId: match.entrant1.type === "entry" ? match.entrant1.entryId : null,
+      participant2EntryId: match.entrant2.type === "entry" ? match.entrant2.entryId : null,
       winnerEntryId: null,
-      nextMatchId: null,
-      nextSlot: null,
-      status: "READY"
-    });
-    entrantsBySeed.set(byes + index + 1, { type: "match", matchId: id });
-  });
-
-  const firstMainRound = 2;
-  const firstMainRoundSlots = seedOrder(bracketSize / 2).map((seed) => entrantsBySeed.get(seed) ?? null);
-  const firstMainRoundMatchCount = bracketSize / 4;
-
-  for (let position = 1; position <= firstMainRoundMatchCount; position += 1) {
-    const entrant1 = firstMainRoundSlots[(position - 1) * 2];
-    const entrant2 = firstMainRoundSlots[(position - 1) * 2 + 1];
-    const id = matchId(firstMainRound, position);
-    matches.push({
-      id,
-      round: firstMainRound,
-      position,
-      participant1EntryId: entrant1?.type === "entry" ? entrant1.entryId : null,
-      participant2EntryId: entrant2?.type === "entry" ? entrant2.entryId : null,
-      winnerEntryId: null,
-      nextMatchId: roundCount > firstMainRound ? matchId(firstMainRound + 1, Math.ceil(position / 2)) : null,
-      nextSlot: roundCount > firstMainRound ? (((position - 1) % 2) + 1 as 1 | 2) : null,
-      status: entrant1?.type === "entry" && entrant2?.type === "entry" ? "READY" : "PENDING"
-    });
-    connectEntrant(matches, entrant1, id, 1);
-    connectEntrant(matches, entrant2, id, 2);
-  }
-
-  for (let round = 3; round <= roundCount; round += 1) {
-    const matchCount = bracketSize / 2 ** round;
-    for (let position = 1; position <= matchCount; position += 1) {
-      matches.push({
-        id: matchId(round, position),
-        round,
-        position,
-        participant1EntryId: null,
-        participant2EntryId: null,
-        winnerEntryId: null,
-        nextMatchId: round < roundCount ? matchId(round + 1, Math.ceil(position / 2)) : null,
-        nextSlot: round < roundCount ? (((position - 1) % 2) + 1 as 1 | 2) : null,
-        status: "PENDING"
-      });
-    }
-  }
-
-  return { bracketSize, rounds, matches };
+      nextMatchId: match.nextMatchId,
+      nextSlot: match.nextSlot,
+      status: match.entrant1.type === "entry" && match.entrant2.type === "entry" ? "READY" : "PENDING"
+    }))
+  };
 }
 
-function pairPreliminaryEntries(entries: BracketEntry[]) {
-  const pairs: Array<[BracketEntry, BracketEntry]> = [];
+function pairSeededEntries(entries: BracketEntry[]) {
+  const ordered: BracketEntry[] = [];
   let left = 0;
   let right = entries.length - 1;
-  while (left < right) {
-    pairs.push([entries[left], entries[right]]);
+  while (left <= right) {
+    ordered.push(entries[left]);
+    if (left !== right) ordered.push(entries[right]);
     left += 1;
     right -= 1;
   }
-  return pairs;
+  return ordered;
 }
 
-function connectEntrant(matches: GeneratedMatch[], entrant: RoundEntrant | null | undefined, nextMatchId: string, nextSlot: 1 | 2) {
-  if (entrant?.type !== "match") return;
-  const source = matches.find((match) => match.id === entrant.matchId);
-  if (!source) return;
-  source.nextMatchId = nextMatchId;
-  source.nextSlot = nextSlot;
+function matchId(round: number, position: number) {
+  return `r${round}m${position}`;
 }
 
 export function advanceWinner(matches: GeneratedMatch[], matchId: string, winnerEntryId: string | null) {
@@ -222,25 +193,6 @@ export function recordWinner(matches: GeneratedMatch[], matchId: string, winnerE
   match.winnerEntryId = winnerEntryId;
   match.status = "FINISHED";
   advanceWinner(matches, match.id, winnerEntryId);
-}
-
-function distributeByes(entries: BracketEntry[], bracketSize: number) {
-  const slots: Array<BracketEntry | null> = Array.from({ length: bracketSize }, () => null);
-  const order = seedOrder(bracketSize);
-  const entriesBySeed = new Map(entries.map((entry, index) => [index + 1, entry]));
-  order.forEach((seed, slotIndex) => {
-    slots[slotIndex] = entriesBySeed.get(seed) ?? null;
-  });
-  return slots;
-}
-
-function seedOrder(size: number): number[] {
-  let order = [1, 2];
-  while (order.length < size) {
-    const nextSize = order.length * 2;
-    order = order.flatMap((seed) => [seed, nextSize + 1 - seed]);
-  }
-  return order;
 }
 
 function roundName(round: number, roundCount: number) {
