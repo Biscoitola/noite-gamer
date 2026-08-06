@@ -1,5 +1,6 @@
 import { Container, Panel } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
+import { remainingSlots } from "@/lib/capacity";
 import { listActiveGames } from "@/lib/registrations/service";
 import { RegistrationForm } from "./registration-form";
 
@@ -7,7 +8,13 @@ export const dynamic = "force-dynamic";
 
 export default async function RegistrationPage() {
   const event = await listActiveGames().catch(() => null);
-  const games = event?.games.map((game) => ({ id: game.id, name: game.name, price: Number(game.price) })) ?? [];
+  const games = event?.games.map((game) => ({
+    id: game.id,
+    name: game.name,
+    price: Number(game.price),
+    capacity: game.capacity,
+    remaining: remainingSlots(game.capacity, game._count.items)
+  })) ?? [];
   return (
     <>
       <PublicHeader />

@@ -2,6 +2,7 @@ import { ButtonLink, Container, Panel } from "@/components/ui";
 import { EventLogo, PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
 import { trophyAwards } from "@/lib/award-showcase";
+import { ACTIVE_REGISTRATION_STATUSES, OCCUPIED_ITEM_STATUSES, remainingSlots } from "@/lib/capacity";
 import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
 import type { CSSProperties } from "react";
 
@@ -18,6 +19,18 @@ export default async function HomePage() {
     prisma.game
       .findMany({
         where: { isActive: true, event: { status: "ACTIVE" } },
+        include: {
+          _count: {
+            select: {
+              items: {
+                where: {
+                  status: { in: [...OCCUPIED_ITEM_STATUSES] },
+                  registration: { status: { in: [...ACTIVE_REGISTRATION_STATUSES] } }
+                }
+              }
+            }
+          }
+        },
         orderBy: { name: "asc" }
       })
       .catch(() => []),
@@ -80,7 +93,9 @@ export default async function HomePage() {
               <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
                 {game.description}
               </p>
-              <p className="mt-3 text-sm font-black text-[#B45CFF]">R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas</p>
+              <p className="mt-3 text-sm font-black text-[#B45CFF]">
+                R$ {Number(game.price).toFixed(2)} - {remainingSlots(game.capacity, game._count.items)} vaga{remainingSlots(game.capacity, game._count.items) === 1 ? "" : "s"} disponive{remainingSlots(game.capacity, game._count.items) === 1 ? "l" : "is"}
+              </p>
             </Panel>
           )) : (
             <Panel className="sm:col-span-3">

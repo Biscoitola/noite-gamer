@@ -8,6 +8,8 @@ type GameOption = {
   id: string;
   name: string;
   price: number;
+  capacity: number;
+  remaining: number;
 };
 
 const initialState: RegistrationFormState = {};
@@ -27,11 +29,23 @@ export function RegistrationForm({ disabled, games }: { disabled: boolean; games
       <fieldset className="grid gap-3">
         <legend className="text-sm font-bold">Modalidades</legend>
         {games.map((game) => (
-          <label key={game.id} className="flex min-h-12 items-center justify-between border border-[#FFD400]/30 bg-black/30 px-3">
-            <span>{game.name}</span>
+          <label key={game.id} className="flex min-h-12 items-center justify-between gap-3 border border-[#FFD400]/30 bg-black/30 px-3 py-2">
+            <span className="grid gap-1">
+              <span>{game.name}</span>
+              <span className={game.remaining > 0 ? "text-xs font-black uppercase text-[#A3A3A3]" : "text-xs font-black uppercase text-red-200"}>
+                {game.remaining > 0 ? `${game.remaining} de ${game.capacity} vagas disponiveis` : "Esgotado"}
+              </span>
+            </span>
             <span className="flex items-center gap-3 text-[#FFD400]">
               R$ {game.price.toFixed(2)}
-              <input className="size-5" name="gameIds" type="checkbox" value={game.id} defaultChecked={selectedGames.has(game.id)} />
+              <input
+                className="size-5"
+                disabled={game.remaining <= 0}
+                name="gameIds"
+                type="checkbox"
+                value={game.id}
+                defaultChecked={game.remaining > 0 && selectedGames.has(game.id)}
+              />
             </span>
           </label>
         ))}

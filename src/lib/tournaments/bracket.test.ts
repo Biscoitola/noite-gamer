@@ -11,7 +11,7 @@ describe("single elimination bracket", () => {
       const bracket = generateSingleEliminationBracket(entries(count));
       expect(bracket.bracketSize).toBeGreaterThanOrEqual(count);
       expect((bracket.bracketSize & (bracket.bracketSize - 1)) === 0).toBe(true);
-      expect(bracket.matches).toHaveLength(bracket.bracketSize - 1);
+      expect(bracket.matches.length).toBeLessThanOrEqual(bracket.bracketSize - 1);
       expect(bracket.matches.every((match) => !(match.participant1EntryId === null && match.participant2EntryId === null && match.round === 1))).toBe(true);
     });
   }
@@ -25,18 +25,28 @@ describe("single elimination bracket", () => {
 
   it("avanca participante contra BYE", () => {
     const bracket = generateSingleEliminationBracket(entries(3));
-    expect(bracket.matches.some((match) => match.status === "BYE")).toBe(true);
+    expect(bracket.matches.some((match) => match.status === "BYE")).toBe(false);
     const final = bracket.matches.find((match) => match.id === "r2m1");
-    expect(Boolean(final?.participant1EntryId ?? final?.participant2EntryId)).toBe(true);
+    expect(final?.participant1EntryId).toBe("p1");
+    expect(final?.participant2EntryId).toBeNull();
   });
 
-  it("pareia participantes extras antes de criar BYEs", () => {
+  it("mostra apenas jogos reais na fase preliminar quando ha BYEs", () => {
     const bracket = generateSingleEliminationBracket(entries(5));
     const firstRound = bracket.matches.filter((match) => match.round === 1);
     const playableMatches = firstRound.filter((match) => match.participant1EntryId && match.participant2EntryId);
 
+    expect(firstRound).toHaveLength(1);
     expect(playableMatches).toHaveLength(1);
     expect(playableMatches[0].participant1EntryId).toBe("p4");
     expect(playableMatches[0].participant2EntryId).toBe("p5");
+  });
+
+  it("nao cria dois jogos com um jogador esperando se eles podem se enfrentar", () => {
+    const bracket = generateSingleEliminationBracket(entries(6));
+    const firstRound = bracket.matches.filter((match) => match.round === 1);
+
+    expect(firstRound).toHaveLength(2);
+    expect(firstRound.every((match) => match.participant1EntryId && match.participant2EntryId)).toBe(true);
   });
 });

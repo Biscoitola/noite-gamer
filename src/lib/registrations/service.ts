@@ -2,6 +2,7 @@ import { addMinutes } from "date-fns";
 import { nanoid } from "nanoid";
 import { prisma } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments";
+import { ACTIVE_REGISTRATION_STATUSES, OCCUPIED_ITEM_STATUSES } from "@/lib/capacity";
 import { calculateRegistrationTotal } from "@/lib/pricing";
 import { createProtocol, createPublicToken, createRaffleCode, hashToken, normalizeWhatsapp } from "@/lib/security";
 import type { RegistrationInput } from "./schema";
@@ -9,7 +10,24 @@ import type { RegistrationInput } from "./schema";
 export async function listActiveGames() {
   const event = await prisma.event.findFirst({
     where: { status: "ACTIVE" },
-    include: { games: { where: { isActive: true }, orderBy: { name: "asc" } } }
+    include: {
+      games: {
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        include: {
+          _count: {
+            select: {
+              items: {
+                where: {
+                  status: { in: [...OCCUPIED_ITEM_STATUSES] },
+                  registration: { status: { in: [...ACTIVE_REGISTRATION_STATUSES] } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   });
   return event;
 }
@@ -30,7 +48,11 @@ export async function createRegistration(input: RegistrationInput) {
   return prisma.$transaction(async (tx) => {
     for (const game of games) {
       const confirmed = await tx.registrationItem.count({
-        where: { gameId: game.id, status: { in: ["CONFIRMED", "RESERVED"] } }
+        where: {
+          gameId: game.id,
+          status: { in: [...OCCUPIED_ITEM_STATUSES] },
+          registration: { status: { in: [...ACTIVE_REGISTRATION_STATUSES] } }
+        }
       });
       if (confirmed >= game.capacity) throw new Error(`Nao ha vagas disponiveis para ${game.name}.`);
     }
