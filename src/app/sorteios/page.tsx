@@ -48,6 +48,7 @@ export default async function RafflesPage() {
                 <p className="text-xs font-black uppercase text-[#B45CFF]">{prize.sponsor.name}</p>
                 <h2 className="text-xl font-black text-[#FFD400]">{prize.title}</h2>
                 <p className="mt-1 text-sm text-[#A3A3A3]">{prize.description}</p>
+                <p className="mt-2 text-xs font-black uppercase text-[#FFD400]">{raffleAudienceLabel(prize.raffleAudience)}</p>
               </div>
               {prize.winnerRegistration ? (
                 <div className="border border-emerald-400/35 bg-emerald-400/10 p-3">
@@ -67,4 +68,8 @@ export default async function RafflesPage() {
       </Container>
     </>
   );
+}
+
+function raffleAudienceLabel(value: string) {
+  return value === "TOURNAMENT_WINNERS" ? "Sorteio exclusivo para campeoes" : "Sorteio geral";
 }

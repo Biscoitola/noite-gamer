@@ -242,6 +242,7 @@ model Prize {
   imageUrl             String
   quantity             Int           @default(1)
   isActive             Boolean       @default(true)
+  raffleAudience       String        @default("ALL_CONFIRMED")
   winnerRegistrationId String?
   drawnAt              DateTime?
   createdAt            DateTime      @default(now())

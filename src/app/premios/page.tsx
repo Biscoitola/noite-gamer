@@ -52,6 +52,7 @@ export default async function AwardsPage() {
                   <h3 className="text-xl font-black text-[#FFD400]">{prize.title}</h3>
                   <p className="mt-1 text-sm leading-6 text-[#A3A3A3]">{prize.description}</p>
                   <p className="mt-2 text-xs font-black uppercase text-[#B45CFF]">Quantidade: {prize.quantity}</p>
+                  <p className="mt-1 text-xs font-black uppercase text-[#FFD400]">{raffleAudienceLabel(prize.raffleAudience)}</p>
                 </div>
               </Panel>
             ))}
@@ -61,4 +62,8 @@ export default async function AwardsPage() {
       </Container>
     </>
   );
+}
+
+function raffleAudienceLabel(value: string) {
+  return value === "TOURNAMENT_WINNERS" ? "Sorteio exclusivo para campeoes" : "Sorteio geral";
 }

@@ -61,6 +61,7 @@ export async function createPrizeAction(formData: FormData) {
       imageUrl,
       description: String(formData.get("description") || "Brinde do patrocinador."),
       quantity: Number(formData.get("quantity") || 1),
+      raffleAudience: String(formData.get("raffleAudience") || "ALL_CONFIRMED"),
       isActive: formData.get("isActive") === "on"
     }
   });
@@ -72,16 +73,24 @@ export async function drawPrizeAction(formData: FormData) {
   const prizeId = String(formData.get("prizeId") || "");
   const returnTo = getReturnTo(formData);
   const prize = await prisma.prize.findUniqueOrThrow({ where: { id: prizeId } });
-  const registrations = await prisma.registration.findMany({
-    where: {
-      eventId: prize.eventId,
-      status: "CONFIRMADA"
-    },
-    include: { participant: true },
-    orderBy: { createdAt: "asc" }
-  });
+  const registrations = prize.raffleAudience === "TOURNAMENT_WINNERS"
+    ? await listTournamentWinnerRegistrations(prize.eventId)
+    : await prisma.registration.findMany({
+        where: {
+          eventId: prize.eventId,
+          status: "CONFIRMADA"
+        },
+        include: { participant: true },
+        orderBy: { createdAt: "asc" }
+      });
   if (registrations.length === 0) {
-    redirectWithMessage(returnTo, "error", "Nao ha inscricoes confirmadas para sortear.");
+    redirectWithMessage(
+      returnTo,
+      "error",
+      prize.raffleAudience === "TOURNAMENT_WINNERS"
+        ? "Nao ha campeoes definidos para este sorteio."
+        : "Nao ha inscricoes confirmadas para sortear."
+    );
   }
 
   const winner = registrations[randomInt(registrations.length)];
@@ -119,4 +128,36 @@ function getReturnTo(formData: FormData) {
 
 function redirectWithMessage(returnTo: string, type: "success" | "error", message: string): never {
   redirect(`${returnTo}?${type}=${encodeURIComponent(message)}`);
+}
+
+async function listTournamentWinnerRegistrations(eventId: string) {
+  const championEntries = await prisma.tournamentEntry.findMany({
+    where: {
+      tournament: {
+        eventId,
+        championEntryId: { not: null }
+      }
+    },
+    include: {
+      tournament: true,
+      registrationItem: {
+        include: {
+          registration: {
+            include: { participant: true }
+          }
+        }
+      }
+    },
+    orderBy: { createdAt: "asc" }
+  });
+
+  const registrationsById = new Map();
+  for (const entry of championEntries) {
+    if (entry.tournament.championEntryId !== entry.id) continue;
+    const registration = entry.registrationItem.registration;
+    if (registration.status !== "CONFIRMADA") continue;
+    registrationsById.set(registration.id, registration);
+  }
+
+  return [...registrationsById.values()];
 }

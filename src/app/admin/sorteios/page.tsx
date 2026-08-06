@@ -66,6 +66,7 @@ export default async function AdminRafflesPage({ searchParams }: { searchParams:
                   <h3 className="text-xl font-black text-[#FFD400]">{prize.title}</h3>
                   <p className="mt-1 text-sm text-[#A3A3A3]">{prize.description}</p>
                   <p className="mt-2 text-xs font-black uppercase text-[#D4D4D4]">Quantidade: {prize.quantity}</p>
+                  <p className="mt-1 text-xs font-black uppercase text-[#FFD400]">{raffleAudienceLabel(prize.raffleAudience)}</p>
                 </div>
               </div>
 
@@ -117,4 +118,8 @@ function Message({ type, value }: { type: "success" | "error"; value?: string })
 
 function readSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function raffleAudienceLabel(value: string) {
+  return value === "TOURNAMENT_WINNERS" ? "Somente campeoes dos torneios" : "Todos os inscritos confirmados";
 }
