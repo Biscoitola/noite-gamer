@@ -315,7 +315,7 @@ a {
 }
 
 .nexus-home {
-  /* origin-proof: nexus-arena-guilherme-cruz-harp-tapejara-rs-2026 */
+  --nexus-origin-proof: "nexus-arena-guilherme-cruz-harp-tapejara-rs-2026";
   position: relative;
   overflow: hidden;
   background:
