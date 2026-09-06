@@ -315,6 +315,7 @@ a {
 }
 
 .nexus-home {
+  /* origin-proof: nexus-arena-guilherme-cruz-harp-tapejara-rs-2026 */
   position: relative;
   overflow: hidden;
   background:
@@ -470,12 +471,6 @@ a {
   border-color: rgba(0, 255, 128, 0.58);
   background: rgba(3, 2, 7, 0.64);
   color: #f5f5f5;
-}
-
-.home-actions a:nth-child(2)::before {
-  content: "T";
-  margin-right: 10px;
-  color: #d4d4d4;
 }
 
 .home-side-note {

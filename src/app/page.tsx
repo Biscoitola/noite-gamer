@@ -63,13 +63,13 @@ export default async function HomePage() {
               <span>Nexus</span>
               <strong>Arena</strong>
             </h1>
-            <p className="home-crown" aria-hidden="true">M</p>
+            <p className="home-crown" aria-hidden="true">N</p>
             <p className="home-subtitle">Mais que jogo. Uma comunidade.</p>
             <p className="home-description">
               Chega junto, escolhe teu jogo e vem curtir a Nexus Arena: inscricao online, Pix, check-in, chaveamento ao vivo e sorteios pra deixar a disputa mais divertida.
             </p>
             <div className="home-actions">
-              <ButtonLink href="/inscricao">Quero participar</ButtonLink>
+              <ButtonLink href="/inscricao">&lt;quero participar&gt;</ButtonLink>
               <ButtonLink href="/torneios" variant="ghost">Ver chaves</ButtonLink>
             </div>
             <div className="home-side-note" aria-label="Temas da Nexus Arena">
