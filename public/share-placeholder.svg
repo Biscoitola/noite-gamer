@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#080808"/>
-  <path d="M0 500h1200v130H0z" fill="#111111"/>
-  <text x="72" y="245" fill="#FFD400" font-family="Arial Black, Arial" font-size="96">NOITE GAMER</text>
-  <text x="78" y="330" fill="#F5F5F5" font-family="Arial" font-size="46">2a EDICAO - HARP - Tapejara/RS</text>
-  <text x="78" y="430" fill="#A3A3A3" font-family="Arial" font-size="34">FIFA 23 | Mortal Kombat | Guitar Hero</text>
+  <rect width="1200" height="630" fill="#05030A"/>
+  <path d="M0 0h1200v630H0z" fill="none" stroke="#8B2CFF" stroke-width="3"/>
+  <path d="M100 92h1000M100 538h1000M172 120 62 230M1046 500l92-92" stroke="#8B2CFF" stroke-width="8" opacity=".45"/>
+  <text x="72" y="245" fill="#F5F5F5" font-family="Arial Black, Arial" font-size="104">NE</text>
+  <text x="238" y="245" fill="#A855F7" font-family="Arial Black, Arial" font-size="120" font-style="italic">X</text>
+  <text x="330" y="245" fill="#F5F5F5" font-family="Arial Black, Arial" font-size="104">US</text>
+  <text x="78" y="330" fill="#C084FC" font-family="Arial Black, Arial" font-size="42">ARENA DE COMPETICOES</text>
+  <text x="78" y="430" fill="#A3A3A3" font-family="Arial" font-size="34">FIFA 26 | Mortal Kombat | Guitar Hero</text>
 </svg>

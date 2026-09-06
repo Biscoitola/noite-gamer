@@ -1,11 +1,16 @@
 {
-  "name": "Noite Gamer - 2a Edicao",
-  "short_name": "Noite Gamer",
+  "name": "Nexus Arena",
+  "short_name": "Nexus Arena",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080808",
-  "theme_color": "#080808",
+  "background_color": "#05030A",
+  "theme_color": "#05030A",
   "icons": [
+    {
+      "src": "/assets/nexus-logo-mark.jpeg",
+      "sizes": "920x600",
+      "type": "image/jpeg"
+    },
     {
       "src": "/icon.svg",
       "sizes": "any",

@@ -8,3 +8,6 @@ test-results
 *.log
 backups
 tsconfig.tsbuildinfo
+
+.vercel
+.env*

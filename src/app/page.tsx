@@ -1,9 +1,8 @@
 import { ButtonLink, Container, Panel } from "@/components/ui";
-import { EventLogo, PublicHeader } from "@/components/public-header";
+import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
-import { trophyAwards } from "@/lib/award-showcase";
 import { ACTIVE_REGISTRATION_STATUSES, OCCUPIED_ITEM_STATUSES, remainingSlots } from "@/lib/capacity";
-import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
+import { HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readHeroPosterSetting } from "@/lib/home-settings";
 import type { CSSProperties } from "react";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +12,10 @@ export default async function HomePage() {
     prisma.event
       .findMany({
         orderBy: { startsAt: "desc" },
-        include: { sponsors: { where: { isActive: true, showInCarousel: true }, orderBy: [{ carouselOrder: "asc" }, { createdAt: "desc" }] } }
+        include: {
+          sponsors: { where: { isActive: true, showInCarousel: true }, orderBy: [{ carouselOrder: "asc" }, { createdAt: "desc" }] },
+          prizes: { where: { isActive: true }, include: { sponsor: true }, orderBy: { createdAt: "desc" } }
+        }
       })
       .catch(() => []),
     prisma.game
@@ -38,58 +40,85 @@ export default async function HomePage() {
   ]);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
   const sponsors = activeEvent?.sponsors ?? [];
-  const heroPosterUrl = readStringSetting(homeSettings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value, DEFAULT_HERO_POSTER_URL);
+  const prizes = activeEvent?.prizes ?? [];
+  const heroPosterUrl = readHeroPosterSetting(homeSettings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value);
   const carouselConfig = parseHomeCarouselConfig(homeSettings.find((setting) => setting.key === HOME_CAROUSEL_KEY)?.value);
-  const carouselEntries = [
-    ...sponsors.map((sponsor) => ({
-      id: `sponsor-${sponsor.id}`,
-      title: sponsor.name,
-      imageUrl: sponsor.carouselImageUrl || sponsor.logoUrl,
-      href: sponsor.websiteUrl ?? "/patrocinadores",
-      external: Boolean(sponsor.websiteUrl)
-    })),
-    ...carouselConfig.images
-      .filter((image) => image.isActive)
-      .map((image) => ({
-        id: `custom-${image.id}`,
-        title: image.title,
-        imageUrl: image.imageUrl,
-        href: image.linkUrl || "/patrocinadores",
-        external: image.linkUrl.startsWith("http")
-      }))
-  ];
+  const eventLocation = activeEvent ? `${activeEvent.city}/${activeEvent.state}` : "Local em breve";
+  const carouselEntries = sponsors.map((sponsor) => ({
+    id: `sponsor-${sponsor.id}`,
+    title: sponsor.name,
+    imageUrl: sponsor.carouselImageUrl || sponsor.logoUrl,
+    href: sponsor.websiteUrl ?? "/patrocinadores",
+    external: Boolean(sponsor.websiteUrl)
+  }));
   const carouselItems = carouselEntries.length > 0 ? [...carouselEntries, ...carouselEntries] : [];
   return (
-    <div className="scratched min-h-screen neon-page">
+    <div className="nexus-home min-h-screen neon-page">
       <PublicHeader showBack={false} />
-      <Container className="grid gap-8">
-        <section className="hero-grid grid min-h-[76vh] items-center gap-8 py-8 lg:grid-cols-[1fr_430px]">
-          <div className="max-w-3xl animate-rise">
-            <EventLogo />
-            <p className="mt-8 text-sm font-bold uppercase text-[#FFD400]">
-              {activeEvent ? `${activeEvent.edition} - ${activeEvent.venue} - ${activeEvent.city}/${activeEvent.state}` : "Edicao configuravel - HARP - Tapejara/RS"}
+      <Container className="grid max-w-7xl gap-10 px-4 pb-12 pt-6 sm:px-6">
+        <section className="home-hero">
+          <div className="home-hero-copy animate-rise">
+            <p className="home-kicker">Bem-vindo a</p>
+            <h1 className="home-title">
+              <span>Nexus</span>
+              <strong>Arena</strong>
+            </h1>
+            <p className="home-crown" aria-hidden="true">M</p>
+            <p className="home-subtitle">Mais que jogo. Uma comunidade.</p>
+            <p className="home-description">
+              Chega junto, escolhe teu jogo e vem curtir a Nexus Arena: inscricao online, Pix, check-in, chaveamento ao vivo e sorteios pra deixar a disputa mais divertida.
             </p>
-            <h1 className="mt-3 text-5xl font-black leading-none text-glow sm:text-7xl">A ARENA ESTA ABERTA</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#D4D4D4]">
-              Inscricoes online, Pix, check-in e chaveamento em um painel competitivo com neon, ranking e controle administrativo.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="home-actions">
               <ButtonLink href="/inscricao">Quero participar</ButtonLink>
               <ButtonLink href="/torneios" variant="ghost">Ver chaves</ButtonLink>
             </div>
+            <div className="home-side-note" aria-label="Temas da Nexus Arena">
+              <span>Games</span>
+              <span>Amizade</span>
+              <span>Competicao</span>
+              <span>Experiencias reais</span>
+            </div>
           </div>
-          <div className="folder-showcase animate-float">
+          <div className="current-edition-card animate-float">
+            <div className="edition-card-meta">
+              <span>Duelos</span>
+              <span>Estrategia</span>
+              <span>Habilidade</span>
+              <span>Diversao</span>
+            </div>
             <img
               src={heroPosterUrl}
-              alt="Folder da Noite Gamer 2a Edicao"
+              alt={activeEvent ? `Folder Nexus Arena - ${activeEvent.edition}` : "Folder da Nexus Arena"}
               className="folder-image"
             />
+          </div>
+        </section>
+        <section className="home-feature-strip" aria-label="Destaques da Nexus Arena">
+          <div>
+            <span aria-hidden="true">[ ]</span>
+            <strong>Varios jogos</strong>
+            <small>De luta, esporte, FPS e mais</small>
+          </div>
+          <div>
+            <span aria-hidden="true">***</span>
+            <strong>Para todos</strong>
+            <small>Iniciantes e competitivos</small>
+          </div>
+          <div>
+            <span aria-hidden="true">T</span>
+            <strong>Eventos presenciais</strong>
+            <small>{eventLocation}</small>
+          </div>
+          <div>
+            <span aria-hidden="true">*</span>
+            <strong>Premiacoes</strong>
+            <small>Dinheiro, trofeus e brindes</small>
           </div>
         </section>
         <section className="grid gap-4 sm:grid-cols-3">
           {games.length > 0 ? games.map((game) => (
             <Panel className="interactive-panel" key={game.id}>
-              <h2 className="text-xl font-black text-[#FFD400]">{game.name}</h2>
+              <h2 className="text-xl font-black text-[#A855F7]">{game.name}</h2>
               <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
                 {game.description}
               </p>
@@ -99,7 +128,7 @@ export default async function HomePage() {
             </Panel>
           )) : (
             <Panel className="sm:col-span-3">
-              <h2 className="text-xl font-black text-[#FFD400]">Configure sua primeira edicao</h2>
+              <h2 className="text-xl font-black text-[#A855F7]">Configure sua primeira edicao</h2>
               <p className="mt-2 text-[#A3A3A3]">Entre no admin e crie edicoes e jogos para liberar as inscricoes.</p>
             </Panel>
           )}
@@ -107,23 +136,30 @@ export default async function HomePage() {
         <section className="grid gap-4">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Premiacao oficial</p>
-            <h2 className="text-3xl font-black text-glow">Trofeus dos campeoes</h2>
+            <h2 className="text-3xl font-black text-glow">Quem levantar o trofeu ainda entra em sorteio especial</h2>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {trophyAwards.map((award) => (
-              <a className="trophy-card interactive-panel" href="/premios" key={award.title}>
-                <img src={award.imageUrl} alt={award.title} />
+          {prizes.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-3">
+              {prizes.slice(0, 3).map((prize) => (
+              <a className="trophy-card interactive-panel" href="/premios" key={prize.id}>
+                <img src={prize.imageUrl} alt={prize.title} />
                 <div>
-                  <p>{award.game}</p>
-                  <h3>{award.title}</h3>
+                  <p>{prize.sponsor.name}</p>
+                  <h3>{prize.title}</h3>
                 </div>
               </a>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <Panel>
+              <h2 className="text-xl font-black text-[#A855F7]">Premios em breve</h2>
+              <p className="mt-2 text-[#A3A3A3]">Cadastre premios nos patrocinadores da edicao ativa para aparecerem aqui.</p>
+            </Panel>
+          )}
         </section>
         <section className="grid gap-4 pb-12">
           <div>
-            <p className="text-sm font-black uppercase text-[#B45CFF]">Quem fortalece a Noite Gamer</p>
+            <p className="text-sm font-black uppercase text-[#B45CFF]">Quem fortalece a Nexus Arena</p>
             <h2 className="text-3xl font-black text-glow">Patrocinadores</h2>
           </div>
           {carouselItems.length > 0 ? (
@@ -145,7 +181,7 @@ export default async function HomePage() {
             </div>
           ) : (
             <Panel>
-              <h2 className="text-xl font-black text-[#FFD400]">Patrocinadores em breve</h2>
+              <h2 className="text-xl font-black text-[#A855F7]">Patrocinadores em breve</h2>
               <p className="mt-2 text-[#A3A3A3]">Cadastre patrocinadores no admin e marque a opcao de carrossel para aparecerem aqui.</p>
             </Panel>
           )}

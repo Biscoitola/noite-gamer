@@ -37,6 +37,13 @@ export async function createRegistration(input: RegistrationInput) {
   if (!event) throw new Error("Evento ativo nao encontrado.");
   const games = event.games.filter((game) => input.gameIds.includes(game.id));
   if (games.length !== input.gameIds.length) throw new Error("Modalidade invalida.");
+  for (const game of games) {
+    if (game.teamMode !== "DOUBLES") continue;
+    const doubles = input.doubles[game.id];
+    if (!doubles?.teamName?.trim() || !doubles.teammateName?.trim() || !doubles.teammateWhatsapp?.trim()) {
+      throw new Error(`Informe o nome da dupla e os participantes para ${game.name}.`);
+    }
+  }
 
   const token = createPublicToken();
   const participantToken = createPublicToken();
@@ -129,13 +136,23 @@ export async function createRegistration(input: RegistrationInput) {
         publicTokenHash: hashToken(token),
         expiresAt,
         items: {
-          create: games.map((game) => ({
-            gameId: game.id,
-            unitPrice: game.price,
-            finalPrice: Number(game.price),
-            discount: 0,
-            status: "RESERVED"
-          }))
+          create: games.map((game) => {
+            const doubles = input.doubles[game.id];
+            const teammateName = doubles?.teammateName?.trim() || null;
+            const teamName = game.teamMode === "DOUBLES"
+              ? doubles?.teamName?.trim() || null
+              : null;
+            return {
+              gameId: game.id,
+              unitPrice: game.price,
+              finalPrice: Number(game.price),
+              discount: 0,
+              status: "RESERVED",
+              teamName,
+              teammateName,
+              teammateWhatsapp: game.teamMode === "DOUBLES" ? doubles?.teammateWhatsapp?.trim() || null : null
+            };
+          })
         }
       },
       include: { participant: true }

@@ -3,21 +3,21 @@ import { PublicHeader } from "@/components/public-header";
 
 export default function RulesPage() {
   return (
-    <>
+    <div className="page-shell min-h-screen">
       <PublicHeader />
-      <Container className="grid max-w-5xl gap-5">
-        <header className="grid gap-2">
-          <p className="text-sm font-black uppercase text-[#B45CFF]">Noite Gamer - 2a Edicao</p>
-          <h1 className="text-4xl font-black text-glow">Regulamento</h1>
-          <p className="max-w-3xl text-[#D4D4D4]">
-            Este regulamento orienta inscricoes, pagamentos, check-in, conduta e disputas das modalidades da Noite Gamer
+      <Container className="grid max-w-5xl gap-6">
+        <header className="page-hero">
+          <p className="page-eyebrow">Nexus Arena - 2a Edicao</p>
+          <h1 className="page-title">Regulamento</h1>
+          <p className="page-lede">
+            Este regulamento orienta inscricoes, pagamentos, check-in, conduta e disputas das modalidades da Nexus Arena
             realizada no HARP, em Tapejara/RS.
           </p>
         </header>
 
         <RulesSection title="1. Participacao">
           <RuleItem>Qualquer participante inscrito corretamente e com pagamento confirmado pode disputar as modalidades selecionadas.</RuleItem>
-          <RuleItem>A inscricao e pessoal e deve conter nome completo, WhatsApp, cidade, nick publico e aceite dos termos.</RuleItem>
+          <RuleItem>A inscricao deve conter nick publico, WhatsApp, modalidades escolhidas e aceite dos termos.</RuleItem>
           <RuleItem>O nick publico sera usado nas chaves e telas publicas. Dados pessoais nao serao exibidos publicamente.</RuleItem>
           <RuleItem>A organizacao pode recusar nomes ofensivos, discriminatorios ou que prejudiquem a identificacao do participante.</RuleItem>
         </RulesSection>
@@ -52,7 +52,7 @@ export default function RulesPage() {
           <RuleItem>Decisoes da organizacao durante o evento buscam preservar ordem, seguranca e andamento do torneio.</RuleItem>
         </RulesSection>
 
-        <RulesSection title="6. FIFA 23">
+        <RulesSection title="6. FIFA 26">
           <RuleItem>As partidas serao disputadas em formato definido pela organizacao no dia do evento.</RuleItem>
           <RuleItem>Configuracoes como tempo de jogo, dificuldade, controles, times permitidos, prorrogacao e penaltis podem ser ajustadas antes do inicio.</RuleItem>
           <RuleItem>Em caso de empate, a organizacao definira prorrogacao, penaltis ou criterio equivalente.</RuleItem>
@@ -77,28 +77,28 @@ export default function RulesPage() {
           <RuleItem>Resultados devem ser registrados pela administracao no sistema.</RuleItem>
           <RuleItem>Correcoes so podem ocorrer quando a partida seguinte ainda nao tiver sido decidida, salvo decisao excepcional da organizacao.</RuleItem>
           <RuleItem>Contestacoes devem ser feitas imediatamente apos a partida.</RuleItem>
-          <RuleItem>A decisao final sobre casos omissos cabe a organizacao da Noite Gamer.</RuleItem>
+          <RuleItem>A decisao final sobre casos omissos cabe a organizacao da Nexus Arena.</RuleItem>
         </RulesSection>
 
         <RulesSection title="10. Imagem, premiacao e alteracoes">
-          <RuleItem>O participante que aceitar uso de imagem autoriza registros de foto e video do evento para divulgacao da Noite Gamer.</RuleItem>
+          <RuleItem>O participante que aceitar uso de imagem autoriza registros de foto e video do evento para divulgacao da Nexus Arena.</RuleItem>
           <RuleItem>Premiacoes, brindes e sorteios serao informados pela organizacao e podem depender de presenca no momento da entrega.</RuleItem>
           <RuleItem>A organizacao pode atualizar horarios, regras operacionais ou ordem das partidas para garantir o bom andamento do evento.</RuleItem>
         </RulesSection>
       </Container>
-    </>
+    </div>
   );
 }
 
 function RulesSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Panel className="interactive-panel">
-      <h2 className="text-xl font-black text-[#FFD400]">{title}</h2>
+    <Panel className="interactive-panel rules-copy">
+      <h2 className="text-xl font-black text-[#A855F7]">{title}</h2>
       <ul className="mt-3 grid gap-2 text-[#D4D4D4]">{children}</ul>
     </Panel>
   );
 }
 
 function RuleItem({ children }: { children: React.ReactNode }) {
-  return <li className="border-l-2 border-[#B45CFF]/60 pl-3 leading-7">{children}</li>;
+  return <li className="leading-7">{children}</li>;
 }

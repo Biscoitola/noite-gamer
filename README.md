@@ -1,6 +1,6 @@
-# Noite Gamer - 2a Edicao
+# Nexus Arena - 2a Edicao
 
-Sistema web responsivo para inscricoes, Pix, painel administrativo, check-in e torneios mata-mata da Noite Gamer no HARP em Tapejara/RS.
+Sistema web responsivo para inscricoes, Pix, painel administrativo, check-in e torneios mata-mata da Nexus Arena no HARP em Tapejara/RS.
 
 ## Stack
 

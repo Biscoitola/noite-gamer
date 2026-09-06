@@ -41,7 +41,7 @@ export class MercadoPagoProvider implements PaymentProvider {
       },
       body: JSON.stringify({
         transaction_amount: input.amount,
-        description: `Noite Gamer - inscricao ${input.registrationId}`,
+        description: `Nexus Arena - inscricao ${input.registrationId}`,
         payment_method_id: "pix",
         date_of_expiration: input.expiresAt.toISOString(),
         external_reference: input.registrationId,

@@ -1,13 +1,15 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readStringSetting } from "@/lib/home-settings";
+import { HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readHeroPosterSetting } from "@/lib/home-settings";
 import {
   createEditionAction,
   createGameAction,
   createHomeCarouselImageAction,
+  deleteEditionAction,
   deleteGameAction,
   deleteHomeCarouselImageAction,
+  toggleEditionStatusAction,
   toggleGameStatusAction,
   updateGameAction,
   updateHomeCarouselImageAction,
@@ -27,7 +29,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
     include: { games: { orderBy: { name: "asc" }, include: { _count: { select: { items: true, tournaments: true } } } } }
   });
   const settings = await prisma.systemSetting.findMany({ where: { key: { in: [HOME_HERO_POSTER_KEY, HOME_CAROUSEL_KEY] } } });
-  const heroPosterUrl = readStringSetting(settings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value, DEFAULT_HERO_POSTER_URL);
+  const heroPosterUrl = readHeroPosterSetting(settings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value);
   const carouselConfig = parseHomeCarouselConfig(settings.find((setting) => setting.key === HOME_CAROUSEL_KEY)?.value);
   return (
     <Container className="grid gap-5">
@@ -57,7 +59,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
       <Panel className="interactive-panel scroll-mt-6" id="home">
         <div className="grid gap-4 lg:grid-cols-[1fr_240px] lg:items-start">
           <div>
-            <h2 className="text-xl font-black text-[#FFD400]">Imagem principal da home</h2>
+            <h2 className="text-xl font-black text-[#A855F7]">Imagem principal da home</h2>
             <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
               Cole uma URL publica da imagem do folder. Ela aparece automaticamente para todos na tela inicial.
             </p>
@@ -73,12 +75,12 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
               <p className="text-xs text-[#A3A3A3]">
                 Para voltar ao padrao, salve vazio ou use /assets/folder-noite-gamer.png. Nao cole arquivo do computador ou imagem copiada; precisa ser link publico.
               </p>
-              <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">
+              <button className="focus-ring neon-action min-h-12 px-4 font-black uppercase">
                 Salvar imagem da home
               </button>
             </form>
           </div>
-          <div className="border border-[#FFD400]/30 bg-black/30 p-2">
+          <div className="border border-[#A855F7]/30 bg-black/30 p-2">
             <img className="aspect-[2/3] w-full object-cover" src={heroPosterUrl} alt="Preview da imagem principal da home" />
           </div>
         </div>
@@ -87,7 +89,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
       <Panel className="interactive-panel scroll-mt-6" id="carrossel">
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <div>
-            <h2 className="text-xl font-black text-[#FFD400]">Carrossel da home</h2>
+            <h2 className="text-xl font-black text-[#A855F7]">Carrossel da home</h2>
             <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
               As imagens abaixo aparecem junto com os patrocinadores marcados para o carrossel. Use para artes, chamadas, brindes ou banners extras.
             </p>
@@ -101,7 +103,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
             </form>
           </div>
           <form action={createHomeCarouselImageAction} className="grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
-            <p className="text-xs font-black uppercase text-[#FFD400]">Adicionar imagem extra</p>
+            <p className="text-xs font-black uppercase text-[#A855F7]">Adicionar imagem extra</p>
             <Field label="Titulo"><input className={inputClass} name="title" required placeholder="Patrocinador, brinde, chamada..." /></Field>
             <Field label="URL da imagem"><input className={inputClass} name="imageUrl" required placeholder="https://..." /></Field>
             <Field label="Link ao clicar"><input className={inputClass} name="linkUrl" placeholder="/patrocinadores ou https://..." /></Field>
@@ -112,18 +114,18 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
               <input name="isActive" type="checkbox" defaultChecked /> Mostrar no carrossel
             </label>
-            <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">
+            <button className="focus-ring neon-action min-h-12 px-4 font-black uppercase">
               Adicionar imagem
             </button>
           </form>
         </div>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {carouselConfig.images.length > 0 ? carouselConfig.images.map((image) => (
-            <article className="grid gap-3 border border-[#FFD400]/25 bg-[#111111] p-3" key={image.id}>
+            <article className="grid gap-3 border border-[#A855F7]/25 bg-[#0B0712] p-3" key={image.id}>
               <div className="flex gap-3">
                 <img src={image.imageUrl} alt={image.title} className="h-20 w-28 border border-[#B45CFF]/35 bg-white object-contain p-1" />
                 <div>
-                  <strong className="text-[#FFD400]">{image.title}</strong>
+                  <strong className="text-[#A855F7]">{image.title}</strong>
                   <p className="text-xs uppercase text-[#B45CFF]">Ordem {image.order} | {image.isActive ? "visivel" : "oculta"}</p>
                   <p className="mt-1 break-all text-xs text-[#A3A3A3]">{image.linkUrl || "Sem link"}</p>
                 </div>
@@ -137,7 +139,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                 <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
                   <input name="isActive" type="checkbox" defaultChecked={image.isActive} /> Mostrar no carrossel
                 </label>
-                <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                <button className="focus-ring neon-action min-h-11 px-3 text-xs font-black uppercase">
                   Salvar imagem
                 </button>
               </form>
@@ -158,9 +160,9 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Panel className="interactive-panel scroll-mt-6" id="edicao">
-          <h2 className="text-xl font-black text-[#FFD400]">Criar edicao</h2>
+          <h2 className="text-xl font-black text-[#A855F7]">Criar edicao</h2>
           <form action={createEditionAction} className="mt-4 grid gap-3">
-            <Field label="Nome do evento"><input className={inputClass} name="name" required defaultValue="Noite Gamer" /></Field>
+            <Field label="Nome do evento"><input className={inputClass} name="name" required defaultValue="Nexus Arena" /></Field>
             <Field label="Edicao"><input className={inputClass} name="edition" required placeholder="Edicao 1, Copa HARP, Especial Ferias" /></Field>
             <Field label="Descricao"><textarea className={inputClass} name="description" rows={3} /></Field>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -188,13 +190,16 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
         </Panel>
 
         <Panel className="interactive-panel scroll-mt-6" id="jogo">
-          <h2 className="text-xl font-black text-[#FFD400]">Adicionar jogo</h2>
+          <h2 className="text-xl font-black text-[#A855F7]">Adicionar jogo</h2>
           <form action={createGameAction} className="mt-4 grid gap-3">
             <Field label="Edicao">
               <select className={inputClass} name="eventId" required>
                 {events.map((event) => <option key={event.id} value={event.id}>{event.name} - {event.edition}</option>)}
               </select>
             </Field>
+            <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+              <input name="teamMode" type="checkbox" value="DOUBLES" /> Jogo em dupla
+            </label>
             <Field label="Nome do jogo"><input className={inputClass} name="name" required placeholder="Tekken, Valorant, Mario Kart..." /></Field>
             <Field label="Slug publico"><input className={inputClass} name="slug" placeholder="tekken-8" /></Field>
             <Field label="Descricao"><textarea className={inputClass} name="description" rows={3} /></Field>
@@ -205,7 +210,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
               <input name="isActive" type="checkbox" defaultChecked /> Ativar jogo
             </label>
-            <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">Salvar jogo</button>
+            <button className="focus-ring neon-action min-h-12 px-4 font-black uppercase">Salvar jogo</button>
           </form>
         </Panel>
       </section>
@@ -217,18 +222,47 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
             <article className="border border-[#B45CFF]/30 bg-black/25 p-4" key={event.id}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-black text-[#FFD400]">{event.name} - {event.edition}</h3>
-                  <p className="text-sm text-[#A3A3A3]">{event.venue} - {event.city}/{event.state} - {event.status}</p>
+                  <h3 className="text-lg font-black text-[#A855F7]">{event.name} - {event.edition}</h3>
+                  <p className="text-sm text-[#A3A3A3]">{event.venue} - {event.city}/{event.state}</p>
                 </div>
-                <strong className="text-sm text-[#B45CFF]">{event.games.length} jogos</strong>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={event.status === "ACTIVE" ? "border border-emerald-400/45 bg-emerald-400/10 px-3 py-2 text-xs font-black uppercase text-emerald-200" : "border border-[#B45CFF]/35 bg-black/30 px-3 py-2 text-xs font-black uppercase text-[#A3A3A3]"}>
+                    {event.status === "ACTIVE" ? "Ativa na home" : "Desativada"}
+                  </span>
+                  <strong className="text-sm text-[#B45CFF]">{event.games.length} jogos</strong>
+                </div>
               </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <form action={toggleEditionStatusAction}>
+                  <input name="eventId" type="hidden" value={event.id} />
+                  <input name="isActive" type="hidden" value={event.status === "ACTIVE" ? "false" : "true"} />
+                  <button className="focus-ring min-h-10 w-full rounded-[8px] border border-[#00FF88]/50 px-3 text-xs font-black uppercase text-[#00FF88] hover:bg-[#00FF88] hover:text-[#020704]">
+                    {event.status === "ACTIVE" ? "Desativar edicao" : "Ativar esta edicao"}
+                  </button>
+                </form>
+                <p className="border border-[#B45CFF]/25 bg-black/25 px-3 py-2 text-xs leading-5 text-[#A3A3A3]">
+                  Ao ativar, esta edicao aparece na home e as outras edicoes saem do ar.
+                </p>
+              </div>
+              <form action={deleteEditionAction} className="mt-3 grid gap-2 border border-red-500/30 bg-red-500/5 p-3">
+                <input name="eventId" type="hidden" value={event.id} />
+                <label className="flex items-start gap-3 text-xs leading-5 text-red-100">
+                  <input className="mt-1" name="confirmDelete" type="checkbox" required />
+                  Confirmo que quero excluir esta edicao e todos os dados ligados a ela.
+                </label>
+                <button className="focus-ring min-h-10 w-full border border-red-500/60 px-3 text-xs font-black uppercase text-red-200 hover:bg-red-500/10">
+                  Excluir edicao
+                </button>
+              </form>
               <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {event.games.map((game) => (
-                  <li className="border border-[#FFD400]/25 bg-[#111111] p-3" key={game.id}>
+                  <li className="border border-[#A855F7]/25 bg-[#0B0712] p-3" key={game.id}>
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <strong>{game.name}</strong>
-                        <p className="text-sm text-[#A3A3A3]">R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas - {game.isActive ? "ativo" : "inativo"}</p>
+                        <p className="text-sm text-[#A3A3A3]">
+                          R$ {Number(game.price).toFixed(2)} - {game.capacity} vagas - {game.teamMode === "DOUBLES" ? "duplas" : "solo"} - {game.isActive ? "ativo" : "inativo"}
+                        </p>
                         <p className="mt-1 text-xs uppercase text-[#A3A3A3]">
                           {game._count.items} inscricoes | {game._count.tournaments} torneios
                         </p>
@@ -239,7 +273,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                     </div>
                     <form action={updateGameAction} className="mt-4 grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
                       <input name="gameId" type="hidden" value={game.id} />
-                      <p className="text-xs font-black uppercase text-[#FFD400]">Editar dados do jogo</p>
+                      <p className="text-xs font-black uppercase text-[#A855F7]">Editar dados do jogo</p>
                       <Field label="Nome do jogo">
                         <input className={inputClass} name="name" required defaultValue={game.name} />
                       </Field>
@@ -258,9 +292,12 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                         </Field>
                       </div>
                       <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
+                        <input name="teamMode" type="checkbox" value="DOUBLES" defaultChecked={game.teamMode === "DOUBLES"} /> Jogo em dupla
+                      </label>
+                      <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
                         <input name="isActive" type="checkbox" defaultChecked={game.isActive} /> Jogo ativo
                       </label>
-                      <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                      <button className="focus-ring neon-action min-h-11 px-3 text-xs font-black uppercase">
                         Salvar alteracoes
                       </button>
                     </form>
@@ -268,7 +305,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                       <form action={toggleGameStatusAction}>
                         <input name="gameId" type="hidden" value={game.id} />
                         <input name="isActive" type="hidden" value={game.isActive ? "false" : "true"} />
-                        <button className="focus-ring min-h-10 w-full border border-[#B45CFF]/50 px-3 text-xs font-black uppercase text-[#F5F5F5] hover:border-[#FFD400] hover:text-[#FFD400]">
+                        <button className="focus-ring min-h-10 w-full border border-[#B45CFF]/50 px-3 text-xs font-black uppercase text-[#F5F5F5] hover:border-[#A855F7] hover:text-[#A855F7]">
                           {game.isActive ? "Desativar" : "Ativar"}
                         </button>
                       </form>
@@ -296,7 +333,7 @@ function readSearchParam(value: string | string[] | undefined) {
 
 function AdminAnchor({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <a className="focus-ring border border-[#B45CFF]/35 bg-black/35 px-3 py-3 text-center text-xs font-black uppercase text-[#F5F5F5] hover:border-[#FFD400] hover:text-[#FFD400]" href={href}>
+    <a className="focus-ring border border-[#B45CFF]/35 bg-black/35 px-3 py-3 text-center text-xs font-black uppercase text-[#F5F5F5] hover:border-[#A855F7] hover:text-[#A855F7]" href={href}>
       {children}
     </a>
   );

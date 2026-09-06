@@ -13,16 +13,23 @@ export default async function RegistrationPage() {
     name: game.name,
     price: Number(game.price),
     capacity: game.capacity,
+    teamMode: game.teamMode,
     remaining: remainingSlots(game.capacity, game._count.items)
   })) ?? [];
   return (
-    <>
+    <div className="page-shell min-h-screen">
       <PublicHeader />
-      <Container className="grid gap-5">
-      <h1 className="text-3xl font-black text-glow">Inscricao</h1>
+      <Container className="grid max-w-6xl gap-6">
+      <header className="page-hero">
+        <p className="page-eyebrow">Inscricao online</p>
+        <h1 className="page-title">Escolha sua <strong>disputa</strong></h1>
+        <p className="page-lede">
+          Garanta sua vaga, informe seus dados e gere o Pix. Depois da confirmacao, seu nome entra no chaveamento e nos sorteios da edicao.
+        </p>
+      </header>
       {!event ? (
         <Panel>
-          <h2 className="text-xl font-black text-[#FFD400]">Banco de dados indisponivel</h2>
+          <h2 className="text-xl font-black text-[#A855F7]">Banco de dados indisponivel</h2>
           <p className="mt-2 text-[#D4D4D4]">
             A inscricao precisa do PostgreSQL ativo. Confirme o Docker, rode as migrations e reinicie o servidor de desenvolvimento.
           </p>
@@ -32,6 +39,6 @@ export default async function RegistrationPage() {
         <RegistrationForm disabled={!event} games={games} />
       </Panel>
       </Container>
-    </>
+    </div>
   );
 }

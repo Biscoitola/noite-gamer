@@ -18,7 +18,7 @@ export async function createSponsorAction(formData: FormData) {
       eventId,
       name,
       logoUrl,
-      description: String(formData.get("description") || "Patrocinador da Noite Gamer."),
+      description: String(formData.get("description") || "Patrocinador da Nexus Arena."),
       websiteUrl: String(formData.get("websiteUrl") || "").trim() || null,
       carouselImageUrl: String(formData.get("carouselImageUrl") || "").trim() || null,
       showInCarousel: formData.get("showInCarousel") === "on",

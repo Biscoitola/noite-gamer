@@ -1,14 +1,18 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
+import { AdminEventSelector, type AdminSearchParams, getAdminEventFilter, withEventParam } from "@/lib/admin-event-filter";
 import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { clearPrizeWinnerAction, createPrizeAction, createSponsorAction, drawPrizeAction, updateSponsorCarouselAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminSponsorsPage() {
+export default async function AdminSponsorsPage({ searchParams }: { searchParams?: Promise<AdminSearchParams> }) {
   await requireAdminRole("ADMIN");
-  const events = await prisma.event.findMany({ orderBy: { startsAt: "desc" } });
+  const params = await searchParams;
+  const { events, selectedEventId } = await getAdminEventFilter(params);
+  const currentPath = withEventParam("/admin/patrocinadores", selectedEventId);
   const sponsors = await prisma.sponsor.findMany({
+    where: selectedEventId ? { eventId: selectedEventId } : {},
     include: {
       event: true,
       prizes: {
@@ -25,13 +29,14 @@ export default async function AdminSponsorsPage() {
         <p className="text-sm font-black uppercase text-[#B45CFF]">Patrocinio e brindes</p>
         <h1 className="text-3xl font-black text-glow">Patrocinadores e sorteios</h1>
       </div>
+      <AdminEventSelector events={events} selectedEventId={selectedEventId} params={params} />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Panel>
-          <h2 className="text-xl font-black text-[#FFD400]">Cadastrar patrocinador</h2>
+          <h2 className="text-xl font-black text-[#A855F7]">Cadastrar patrocinador</h2>
           <form action={createSponsorAction} className="mt-4 grid gap-3">
             <Field label="Evento">
-              <select className={inputClass} name="eventId" required>
+              <select className={inputClass} name="eventId" required defaultValue={selectedEventId}>
                 {events.map((event) => <option key={event.id} value={event.id}>{event.name} - {event.edition}</option>)}
               </select>
             </Field>
@@ -47,12 +52,12 @@ export default async function AdminSponsorsPage() {
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
               <input name="isActive" type="checkbox" defaultChecked /> Mostrar no site
             </label>
-            <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black">Salvar patrocinador</button>
+            <button className="focus-ring neon-action min-h-12 px-4 font-black uppercase">Salvar patrocinador</button>
           </form>
         </Panel>
 
         <Panel>
-          <h2 className="text-xl font-black text-[#FFD400]">Cadastrar brinde</h2>
+          <h2 className="text-xl font-black text-[#A855F7]">Cadastrar brinde</h2>
           <form action={createPrizeAction} className="mt-4 grid gap-3">
             <Field label="Patrocinador">
               <select className={inputClass} name="sponsorId" required>
@@ -79,7 +84,7 @@ export default async function AdminSponsorsPage() {
               <div className="flex flex-wrap items-center gap-4">
                 <img src={sponsor.logoUrl} alt={`Logo ${sponsor.name}`} className="size-16 object-contain" />
                 <div>
-                  <h3 className="text-lg font-black text-[#FFD400]">{sponsor.name}</h3>
+                  <h3 className="text-lg font-black text-[#A855F7]">{sponsor.name}</h3>
                   <p className="text-sm text-[#A3A3A3]">{sponsor.event.edition} - {sponsor.isActive ? "visivel" : "oculto"}</p>
                   <p className="text-xs uppercase text-[#B45CFF]">
                     Carrossel: {sponsor.showInCarousel ? "sim" : "nao"} | ordem {sponsor.carouselOrder}
@@ -88,7 +93,7 @@ export default async function AdminSponsorsPage() {
               </div>
               <form action={updateSponsorCarouselAction} className="mt-4 grid gap-3 border border-[#B45CFF]/25 bg-black/25 p-3">
                 <input name="sponsorId" type="hidden" value={sponsor.id} />
-                <p className="text-xs font-black uppercase text-[#FFD400]">Configurar carrossel da home</p>
+                <p className="text-xs font-black uppercase text-[#A855F7]">Configurar carrossel da home</p>
                 <Field label="URL da logo">
                   <input className={inputClass} name="logoUrl" required defaultValue={sponsor.logoUrl} />
                 </Field>
@@ -104,14 +109,14 @@ export default async function AdminSponsorsPage() {
                 <label className="flex min-h-11 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
                   <input name="isActive" type="checkbox" defaultChecked={sponsor.isActive} /> Patrocinador ativo
                 </label>
-                <button className="focus-ring min-h-11 bg-[#FFD400] px-3 text-xs font-black uppercase text-black">
+                <button className="focus-ring neon-action min-h-11 px-3 text-xs font-black uppercase">
                   Salvar carrossel
                 </button>
               </form>
 
-              <form action={createPrizeAction} className="mt-4 grid gap-3 border border-[#FFD400]/25 bg-black/25 p-3">
+              <form action={createPrizeAction} className="mt-4 grid gap-3 border border-[#A855F7]/25 bg-black/25 p-3">
                 <input name="sponsorId" type="hidden" value={sponsor.id} />
-                <p className="text-xs font-black uppercase text-[#FFD400]">Cadastrar premio deste patrocinador</p>
+                <p className="text-xs font-black uppercase text-[#A855F7]">Cadastrar premio deste patrocinador</p>
                 <Field label="Nome do premio">
                   <input className={inputClass} name="title" required />
                 </Field>
@@ -134,7 +139,7 @@ export default async function AdminSponsorsPage() {
 
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 {sponsor.prizes.map((prize) => (
-                  <div className="grid gap-3 border border-[#FFD400]/25 bg-[#111111] p-3" key={prize.id}>
+                  <div className="grid gap-3 border border-[#A855F7]/25 bg-[#0B0712] p-3" key={prize.id}>
                     <div className="flex gap-3">
                       <img src={prize.imageUrl} alt={prize.title} className="size-20 border border-[#B45CFF]/35 object-cover" />
                       <div>
@@ -146,7 +151,6 @@ export default async function AdminSponsorsPage() {
                     {prize.winnerRegistration ? (
                       <div className="border border-emerald-400/35 bg-emerald-400/10 p-3 text-sm">
                         <strong className="text-emerald-200">Ganhador: {prize.winnerRegistration.participant.publicName}</strong>
-                        <p>{prize.winnerRegistration.participant.fullName}</p>
                         <p>Ticket: {prize.winnerRegistration.raffleCode ?? prize.winnerRegistration.protocol}</p>
                       </div>
                     ) : (
@@ -155,10 +159,12 @@ export default async function AdminSponsorsPage() {
                     <div className="grid gap-2 sm:grid-cols-2">
                       <form action={drawPrizeAction}>
                         <input name="prizeId" type="hidden" value={prize.id} />
-                        <button className="focus-ring min-h-10 w-full bg-[#FFD400] px-3 text-xs font-black uppercase text-black">Sortear</button>
+                        <input name="returnTo" type="hidden" value={currentPath} />
+                        <button className="focus-ring neon-action min-h-10 w-full px-3 text-xs font-black uppercase">Sortear</button>
                       </form>
                       <form action={clearPrizeWinnerAction}>
                         <input name="prizeId" type="hidden" value={prize.id} />
+                        <input name="returnTo" type="hidden" value={currentPath} />
                         <button className="focus-ring min-h-10 w-full border border-[#B45CFF]/50 px-3 text-xs font-black uppercase text-[#F5F5F5]">Limpar</button>
                       </form>
                     </div>

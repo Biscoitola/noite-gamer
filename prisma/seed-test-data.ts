@@ -4,7 +4,7 @@ import { generateSingleEliminationBracket } from "../src/lib/tournaments/bracket
 const prisma = new PrismaClient();
 
 const nicknames = {
-  "fifa-23": [
+  "fifa-26": [
     "GoleiroRoxo",
     "FintaMestre",
     "Canhota90",
@@ -65,12 +65,12 @@ async function main() {
 
       const participant = await prisma.participant.create({
         data: {
-          fullName: `Teste ${publicName}`,
+          fullName: publicName,
           publicName,
           whatsapp: `(54) 98888-${String(1000 + index)}`,
           normalizedWhatsapp: `555498888${String(1000 + index)}`,
-          email: `${publicName.toLowerCase()}@teste.local`,
-          city: index % 2 === 0 ? "Tapejara" : "Ibipora",
+          email: null,
+          city: "Nao informado",
           publicId: `test-${game.slug}-${index + 1}`,
           accessTokenHash: `test-token-${game.slug}-${index + 1}`,
           consentTermsAt: new Date(),

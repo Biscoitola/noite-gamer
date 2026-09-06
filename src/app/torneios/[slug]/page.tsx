@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { Container } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
-import { ensurePublicTournamentForGameSlug } from "@/lib/tournaments/service";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +32,15 @@ type SideRound = Omit<PublicRound, "matches"> & {
 
 export default async function TournamentSlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  await ensurePublicTournamentForGameSlug(slug).catch(() => null);
   const tournament = await prisma.tournament.findFirst({
-    where: { public: true, game: { slug } },
+    where: {
+      public: true,
+      status: { not: "DRAFT" },
+      game: { slug, event: { status: "ACTIVE" } },
+      matches: { some: {} }
+    },
     include: {
-      game: true,
+      game: { include: { event: true } },
       rounds: {
         orderBy: { order: "asc" },
         include: {
@@ -62,9 +66,9 @@ export default async function TournamentSlugPage({ params }: { params: Promise<{
       id: match.id,
       position: match.position,
       status: match.status,
-      participant1: match.participant1?.participant.publicName ?? "A definir",
-      participant2: match.participant2?.participant.publicName ?? "A definir",
-      winner: match.winner?.participant.publicName ?? null
+      participant1: entryName(match.participant1),
+      participant2: entryName(match.participant2),
+      winner: match.winner ? entryName(match.winner) : null
     }))
   }));
   const finalRound = rounds.at(-1);
@@ -76,13 +80,16 @@ export default async function TournamentSlugPage({ params }: { params: Promise<{
     : finalRound?.matches.find((match) => match.winner)?.winner;
 
   return (
-    <>
+    <div className="page-shell min-h-screen">
+      <AutoRefresh />
       <PublicHeader />
       <Container className="grid max-w-none gap-3 px-2 py-3 sm:px-4">
-        <header className="mx-auto grid w-full max-w-6xl gap-1 text-center">
-          <p className="text-sm font-black uppercase text-[#FFD400]">NOITE GAMER - 2a EDICAO</p>
-          <h1 className="text-2xl font-black uppercase text-glow sm:text-4xl">{tournament.game.name}</h1>
-          <p className="text-sm uppercase text-[#A3A3A3]">Chaveamento mata-mata</p>
+        <header className="page-hero mx-auto grid w-full max-w-6xl gap-1 text-center">
+          <p className="page-eyebrow">
+            Nexus Arena - {tournament.game.event.edition}
+          </p>
+          <h1 className="page-title">{tournament.game.name}</h1>
+          <p className="page-lede mx-auto">Chaveamento mata-mata atualizado automaticamente durante o evento.</p>
         </header>
 
         <div className="world-bracket-viewport pb-4">
@@ -105,8 +112,12 @@ export default async function TournamentSlugPage({ params }: { params: Promise<{
           </div>
         </div>
       </Container>
-    </>
+    </div>
   );
+}
+
+function entryName(entry: { displayName: string | null; participant: { publicName: string } } | null) {
+  return entry?.displayName ?? entry?.participant.publicName ?? "A definir";
 }
 
 function buildSideRounds(rounds: PublicRound[], side: "left" | "right"): SideRound[] {

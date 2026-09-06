@@ -1,5 +1,6 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { PrintButton } from "@/components/print-button";
+import { AdminEventSelector, type AdminSearchParams, getAdminEventFilter, readSearchParam } from "@/lib/admin-event-filter";
 import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
@@ -8,14 +9,20 @@ export const dynamic = "force-dynamic";
 export default async function RegisteredByGameReportPage({
   searchParams
 }: {
-  searchParams: Promise<{ jogo?: string; busca?: string; status?: string }>;
+  searchParams: Promise<AdminSearchParams>;
 }) {
   await requireAdminRole("ADMIN");
   const params = await searchParams;
-  const games = await prisma.game.findMany({ orderBy: { name: "asc" }, include: { event: true } });
-  const selectedGameId = params.jogo || games[0]?.id || "";
-  const search = (params.busca || "").trim();
-  const status = params.status || "";
+  const { events, selectedEventId } = await getAdminEventFilter(params);
+  const games = await prisma.game.findMany({
+    where: selectedEventId ? { eventId: selectedEventId } : {},
+    orderBy: { name: "asc" },
+    include: { event: true }
+  });
+  const requestedGameId = readSearchParam(params.jogo) || "";
+  const selectedGameId = games.some((game) => game.id === requestedGameId) ? requestedGameId : games[0]?.id || "";
+  const search = (readSearchParam(params.busca) || "").trim();
+  const status = readSearchParam(params.status) || "";
 
   const items = selectedGameId
     ? await prisma.registrationItem.findMany({
@@ -27,10 +34,8 @@ export default async function RegisteredByGameReportPage({
               ? {
                   OR: [
                     { protocol: { contains: search, mode: "insensitive" } },
-                    { participant: { fullName: { contains: search, mode: "insensitive" } } },
                     { participant: { publicName: { contains: search, mode: "insensitive" } } },
-                    { participant: { whatsapp: { contains: search, mode: "insensitive" } } },
-                    { participant: { email: { contains: search, mode: "insensitive" } } }
+                    { participant: { whatsapp: { contains: search, mode: "insensitive" } } }
                   ]
                 }
               : {})
@@ -62,9 +67,11 @@ export default async function RegisteredByGameReportPage({
         <p className="text-sm font-black uppercase text-[#B45CFF]">Relatorio administrativo</p>
         <h1 className="text-3xl font-black text-glow">Inscritos por jogo</h1>
       </div>
+      <AdminEventSelector events={events} selectedEventId={selectedEventId} params={params} />
 
       <Panel className="no-print">
         <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_auto]">
+          <input name="eventId" type="hidden" value={selectedEventId} />
           <Field label="Jogo">
             <select className={inputClass} name="jogo" defaultValue={selectedGameId}>
               {games.map((game) => (
@@ -75,7 +82,7 @@ export default async function RegisteredByGameReportPage({
             </select>
           </Field>
           <Field label="Busca">
-            <input className={inputClass} name="busca" defaultValue={search} placeholder="Nome, nick, WhatsApp, protocolo" />
+            <input className={inputClass} name="busca" defaultValue={search} placeholder="Nick, WhatsApp, protocolo" />
           </Field>
           <Field label="Status da inscricao">
             <select className={inputClass} name="status" defaultValue={status}>
@@ -95,8 +102,8 @@ export default async function RegisteredByGameReportPage({
       </Panel>
 
       <section className="print-report grid gap-4">
-        <header className="border-b border-[#FFD400]/35 pb-4">
-          <p className="text-sm font-black uppercase text-[#B45CFF]">Noite Gamer</p>
+        <header className="border-b border-[#A855F7]/35 pb-4">
+          <p className="text-sm font-black uppercase text-[#B45CFF]">Nexus Arena</p>
           <h2 className="text-2xl font-black">{selectedGame ? `${selectedGame.event.edition} - ${selectedGame.name}` : "Relatorio"}</h2>
           <p className="text-sm text-[#A3A3A3]">Gerado em {new Date().toLocaleString("pt-BR")}</p>
         </header>
@@ -110,15 +117,12 @@ export default async function RegisteredByGameReportPage({
         </div>
 
         <Panel className="overflow-x-auto print-table-panel">
-          <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[900px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-[#FFD400]/40 text-[#FFD400]">
+              <tr className="border-b border-[#A855F7]/40 text-[#A855F7]">
                 <th className="py-2">#</th>
-                <th>Nome</th>
                 <th>Nick</th>
                 <th>WhatsApp</th>
-                <th>E-mail</th>
-                <th>Cidade</th>
                 <th>Protocolo</th>
                 <th>Inscricao</th>
                 <th>Pagamento</th>
@@ -133,11 +137,8 @@ export default async function RegisteredByGameReportPage({
                 return (
                   <tr className="border-b border-[#B45CFF]/20" key={item.id}>
                     <td className="py-2">{index + 1}</td>
-                    <td>{item.registration.participant.fullName}</td>
-                    <td className="font-black text-[#FFD400]">{item.registration.participant.publicName}</td>
+                    <td className="font-black text-[#A855F7]">{entryLabel(item)}</td>
                     <td>{item.registration.participant.whatsapp}</td>
-                    <td>{item.registration.participant.email ?? "-"}</td>
-                    <td>{item.registration.participant.city}</td>
                     <td>{item.registration.protocol}</td>
                     <td>{item.registration.status}</td>
                     <td>{payment?.status ?? "SEM_PAGAMENTO"}</td>
@@ -154,11 +155,23 @@ export default async function RegisteredByGameReportPage({
   );
 }
 
+function entryLabel(item: {
+  teamName: string | null;
+  teammateName: string | null;
+  game: { teamMode: string };
+  registration: { participant: { publicName: string } };
+}) {
+  if (item.game.teamMode !== "DOUBLES") return item.registration.participant.publicName;
+  if (item.teamName) return item.teamName;
+  if (item.teammateName) return `${item.registration.participant.publicName} + ${item.teammateName}`;
+  return item.registration.participant.publicName;
+}
+
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-[#B45CFF]/35 bg-[#111111] p-3">
+    <div className="border border-[#B45CFF]/35 bg-[#0B0712] p-3">
       <span className="text-xs font-black uppercase text-[#A3A3A3]">{label}</span>
-      <strong className="block text-2xl text-[#FFD400]">{value}</strong>
+      <strong className="block text-2xl text-[#A855F7]">{value}</strong>
     </div>
   );
 }

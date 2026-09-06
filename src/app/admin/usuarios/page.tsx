@@ -28,7 +28,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
       {errorMessage ? <Notice tone="error">{errorMessage}</Notice> : null}
 
       <Panel className="interactive-panel">
-        <h2 className="text-xl font-black text-[#FFD400]">Adicionar usuario</h2>
+        <h2 className="text-xl font-black text-[#A855F7]">Adicionar usuario</h2>
         <form action={createAdminUserAction} className="mt-4 grid gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Nome"><input className={inputClass} name="name" required /></Field>
@@ -43,7 +43,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
               </select>
             </Field>
           </div>
-          <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black shadow-[0_0_22px_rgba(255,212,0,0.25)]">
+          <button className="focus-ring neon-action min-h-12 px-4 font-black uppercase">
             Criar usuario
           </button>
         </form>
@@ -54,7 +54,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
           <Panel className="grid gap-4" key={user.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl font-black text-[#FFD400]">{user.name}</h2>
+                <h2 className="text-xl font-black text-[#A855F7]">{user.name}</h2>
                 <p className="text-sm text-[#A3A3A3]">{user.email}</p>
                 <p className="mt-1 text-xs font-black uppercase text-[#B45CFF]">
                   {user.role} | {user.isActive ? "ativo" : "desativado"} | ultimo acesso {user.lastLoginAt ? user.lastLoginAt.toLocaleString("pt-BR") : "nunca"}
@@ -74,7 +74,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
                     <option value="ADMIN">ADMIN - Acesso completo</option>
                   </select>
                 </Field>
-                <button className="focus-ring min-h-10 border border-[#FFD400]/60 px-3 text-xs font-black uppercase text-[#FFD400]">
+                <button className="focus-ring min-h-10 border border-[#A855F7]/60 px-3 text-xs font-black uppercase text-[#A855F7]">
                   Salvar permissao
                 </button>
               </form>
@@ -82,7 +82,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
               <form action={updateAdminUserPasswordAction} className="grid gap-2 border border-[#B45CFF]/25 bg-black/25 p-3">
                 <input name="userId" type="hidden" value={user.id} />
                 <Field label="Nova senha"><input className={inputClass} name="password" minLength={8} required type="password" /></Field>
-                <button className="focus-ring min-h-10 border border-[#FFD400]/60 px-3 text-xs font-black uppercase text-[#FFD400]">
+                <button className="focus-ring min-h-10 border border-[#A855F7]/60 px-3 text-xs font-black uppercase text-[#A855F7]">
                   Trocar senha
                 </button>
               </form>

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function LivePage() {
   const match = await prisma.match.findFirst({
-    where: { status: "READY", tournament: { public: true } },
+    where: { status: "READY", tournament: { public: true, game: { event: { status: "ACTIVE" } } } },
     orderBy: [{ tournament: { updatedAt: "desc" } }, { createdAt: "asc" }],
     include: {
       tournament: { include: { game: true } },
@@ -16,19 +16,23 @@ export default async function LivePage() {
     }
   }).catch(() => null);
   return (
-    <>
+    <div className="page-shell min-h-screen">
       <PublicHeader />
       <Container className="grid min-h-[calc(100vh-72px)] content-center">
-      <Panel className="interactive-panel text-center">
-        <p className="text-[#FFD400]">{match?.tournament.game.name ?? "Noite Gamer"}</p>
-        <h1 className="mt-3 text-5xl font-black">{match?.round.name ?? "Aguardando partida"}</h1>
+      <Panel className="interactive-panel page-hero text-center">
+        <p className="page-eyebrow">{match?.tournament.game.name ?? "Nexus Arena"}</p>
+        <h1 className="page-title">{match?.round.name ?? "Aguardando partida"}</h1>
         <div className="mt-8 grid gap-4 text-4xl font-black sm:grid-cols-[1fr_auto_1fr]">
-          <span>{match?.participant1?.participant.publicName ?? "-"}</span>
-          <span className="text-[#FFD400]">VS</span>
-          <span>{match?.participant2?.participant.publicName ?? "-"}</span>
+          <span>{entryName(match?.participant1)}</span>
+          <span className="text-[#00FF88]">VS</span>
+          <span>{entryName(match?.participant2)}</span>
         </div>
       </Panel>
       </Container>
-    </>
+    </div>
   );
+}
+
+function entryName(entry: { displayName: string | null; participant: { publicName: string } } | null | undefined) {
+  return entry?.displayName ?? entry?.participant.publicName ?? "-";
 }

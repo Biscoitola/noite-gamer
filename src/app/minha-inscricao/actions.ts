@@ -14,7 +14,7 @@ export type RegistrationLookupState = {
     couponDiscount: string;
     publicName: string;
     paymentStatus: string;
-    games: Array<{ name: string; status: string; price: string }>;
+    games: Array<{ name: string; status: string; price: string; teamMode: string; teamName?: string; teammateName?: string }>;
   }>;
 };
 
@@ -52,7 +52,10 @@ export async function lookupRegistration(_prevState: RegistrationLookupState, fo
       games: registration.items.map((item) => ({
         name: item.game.name,
         status: item.status,
-        price: Number(item.finalPrice).toFixed(2)
+        price: Number(item.finalPrice).toFixed(2),
+        teamMode: item.game.teamMode,
+        teamName: item.teamName ?? undefined,
+        teammateName: item.teammateName ?? undefined
       }))
     }))
   };

@@ -29,12 +29,15 @@ async function main() {
 
   const event = await prisma.event.upsert({
     where: { id: "event_noite_gamer_2" },
-    update: {},
+    update: {
+      name: "Nexus Arena",
+      description: "Arena de competicoes gamer no HARP em Tapejara/RS."
+    },
     create: {
       id: "event_noite_gamer_2",
-      name: "Noite Gamer",
+      name: "Nexus Arena",
       edition: "2a Edicao",
-      description: "Torneio gamer no HARP em Tapejara/RS.",
+      description: "Arena de competicoes gamer no HARP em Tapejara/RS.",
       venue: "HARP",
       address: "Endereco configuravel",
       city: "Tapejara",
@@ -50,7 +53,7 @@ async function main() {
   const shouldSeedDefaultGames = process.env.SEED_DEFAULT_GAMES === "true";
   const gameData = shouldSeedDefaultGames
     ? ([
-        ["FIFA 23", "fifa-23", 35, 32],
+        ["FIFA 26", "fifa-26", 35, 32],
         ["Mortal Kombat", "mortal-kombat", 30, 32],
         ["Guitar Hero", "guitar-hero", 25, 24]
       ] as const)
@@ -63,7 +66,7 @@ async function main() {
         eventId: event.id,
         name,
         slug,
-        description: `${name} na Noite Gamer`,
+        description: `${name} na Nexus Arena`,
         price,
         capacity,
         rules: { text: "Regras configuraveis pelo administrador." },
@@ -75,14 +78,14 @@ async function main() {
   const sponsorData = [
     {
       name: "Bechi Acessorios",
-      description: "Patrocinador oficial da Noite Gamer.",
+      description: "Patrocinador oficial da Nexus Arena.",
       logoUrl: `${publicAssetBaseUrl}/sponsor-bechi-acessorios.jpeg`,
       carouselImageUrl: `${publicAssetBaseUrl}/sponsor-bechi-acessorios.jpeg`,
       carouselOrder: 1
     },
     {
       name: "GuriCell",
-      description: "Celulares e assistencia tecnica apoiando a Noite Gamer.",
+      description: "Celulares e assistencia tecnica apoiando a Nexus Arena.",
       logoUrl: `${publicAssetBaseUrl}/sponsor-guricell.jpeg`,
       carouselImageUrl: `${publicAssetBaseUrl}/sponsor-guricell.jpeg`,
       carouselOrder: 2
@@ -118,6 +121,19 @@ async function main() {
     }
   }
 
+  const heroPosterSetting = await prisma.systemSetting.findUnique({ where: { key: "home.heroPosterUrl" } });
+  const shouldSeedHeroPoster =
+    !heroPosterSetting ||
+    heroPosterSetting.value === "/assets/folder-noite-gamer.png" ||
+    heroPosterSetting.value === "/assets/banner-fifa-26-duos.png";
+  if (shouldSeedHeroPoster) {
+    await prisma.systemSetting.upsert({
+      where: { key: "home.heroPosterUrl" },
+      update: { value: "/assets/banner-fifa-26-duos.png" },
+      create: { key: "home.heroPosterUrl", value: "/assets/banner-fifa-26-duos.png" }
+    });
+  }
+
   const carouselSetting = await prisma.systemSetting.findUnique({ where: { key: "home.carouselConfig" } });
   const shouldSeedCarousel =
     !carouselSetting ||
@@ -132,7 +148,7 @@ async function main() {
     images: [
       {
         id: "carousel-noite-gamer",
-        title: "Noite Gamer",
+        title: "Nexus Arena",
         imageUrl: "/assets/carousel-noite-gamer.jpeg",
         linkUrl: "/inscricao",
         order: 1,
@@ -200,7 +216,12 @@ async function main() {
     });
   }
 
+  const removedThirdEditionTestRegistrations = await removeThirdEditionTestRegistrations();
+
   console.log(`Seed concluido: admin ${admin.email}, evento ${event.name} ${event.edition} e ${gameData.length} jogos padrao.`);
+  if (removedThirdEditionTestRegistrations > 0) {
+    console.log(`Inscricoes teste TEST-DUO3 removidas: ${removedThirdEditionTestRegistrations}.`);
+  }
 }
 
 main()
@@ -218,4 +239,71 @@ function hasOnlyBundledCarouselImages(images: unknown[] | undefined) {
     const imageUrl = (image as { imageUrl?: unknown }).imageUrl;
     return typeof imageUrl === "string" && imageUrl.startsWith("/assets/carousel-");
   });
+}
+
+async function removeThirdEditionTestRegistrations() {
+  const registrations = await prisma.registration.findMany({
+    where: {
+      protocol: { startsWith: "TEST-DUO3-" },
+      source: "test-seed",
+      event: {
+        OR: [
+          { edition: { contains: "3", mode: "insensitive" } },
+          { edition: { contains: "terce", mode: "insensitive" } }
+        ]
+      }
+    },
+    select: {
+      id: true,
+      participantId: true,
+      items: { select: { id: true } }
+    }
+  });
+
+  const registrationIds = registrations.map((registration) => registration.id);
+  if (registrationIds.length === 0) return 0;
+
+  const participantIds = registrations.map((registration) => registration.participantId);
+  const itemIds = registrations.flatMap((registration) => registration.items.map((item) => item.id));
+
+  await prisma.$transaction(async (tx) => {
+    const tournamentEntries = await tx.tournamentEntry.findMany({
+      where: { registrationItemId: { in: itemIds } },
+      select: { id: true }
+    });
+    const entryIds = tournamentEntries.map((entry) => entry.id);
+
+    await tx.prize.updateMany({
+      where: { winnerRegistrationId: { in: registrationIds } },
+      data: { winnerRegistrationId: null, drawnAt: null }
+    });
+
+    if (entryIds.length > 0) {
+      await tx.match.deleteMany({
+        where: {
+          OR: [
+            { participant1EntryId: { in: entryIds } },
+            { participant2EntryId: { in: entryIds } },
+            { winnerEntryId: { in: entryIds } },
+            { loserEntryId: { in: entryIds } }
+          ]
+        }
+      });
+      await tx.tournamentEntry.deleteMany({ where: { id: { in: entryIds } } });
+    }
+
+    await tx.checkIn.deleteMany({ where: { registrationItemId: { in: itemIds } } });
+    await tx.payment.deleteMany({ where: { registrationId: { in: registrationIds } } });
+    await tx.registrationItem.deleteMany({ where: { id: { in: itemIds } } });
+    await tx.registration.deleteMany({ where: { id: { in: registrationIds } } });
+    await tx.participant.deleteMany({
+      where: {
+        id: { in: participantIds },
+        publicId: { startsWith: "test-duo3-" },
+        registrations: { none: {} }
+      }
+    });
+  });
+
+  return registrationIds.length;
 }

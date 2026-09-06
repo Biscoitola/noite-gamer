@@ -8,6 +8,6 @@ describe("security helpers", () => {
   });
 
   it("gera protocolo amigavel", () => {
-    expect(createProtocol()).toMatch(/^NG-\d{8}-[A-Z0-9_-]{8}$/);
+    expect(createProtocol()).toMatch(/^NX-\d{8}-[A-Z0-9_-]{8}$/);
   });
 });

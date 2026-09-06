@@ -1,4 +1,5 @@
 import type { AdminRole } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 import { getCurrentAdmin } from "@/lib/auth";
 import { logoutAction } from "./login/actions";
@@ -26,10 +27,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="admin-shell min-h-screen">
       <aside className="admin-sidebar no-print">
         <Link className="admin-brand focus-ring" href="/admin">
-          <span className="logo-core logo-core-compact" aria-hidden="true">NG</span>
+          <span className="nexus-logo-icon" aria-hidden="true">
+            <Image src="/assets/nexus-logo-mark.jpeg" alt="" fill sizes="54px" />
+          </span>
           <span>
             <strong>Admin</strong>
-            <small>Noite Gamer</small>
+            <small>Nexus Arena</small>
           </span>
         </Link>
 

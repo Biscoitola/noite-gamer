@@ -19,13 +19,13 @@ export function createPublicToken() {
   return nanoid(48);
 }
 
-export function createProtocol(prefix = "NG") {
+export function createProtocol(prefix = "NX") {
   const now = new Date();
   const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
   return `${prefix}-${stamp}-${nanoid(8).toUpperCase()}`;
 }
 
-export function createRaffleCode(prefix = "NGS") {
+export function createRaffleCode(prefix = "NXS") {
   return `${prefix}-${nanoid(8).toUpperCase()}`;
 }
 

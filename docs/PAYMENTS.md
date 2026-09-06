@@ -37,13 +37,13 @@ Fluxo:
 
 1. Sistema gera QR Code Pix com valor exato da inscricao.
 2. Participante paga manualmente para a chave Pix configurada.
-3. A tela instrui o participante a informar o nome completo na descricao/identificacao do Pix.
+3. A tela instrui o participante a informar o nick na descricao/identificacao do Pix, quando quiser.
 4. Inscricao permanece `AGUARDANDO_PAGAMENTO`.
 5. Administrador exporta PDF de extrato/comprovantes no banco e importa em `/admin/pagamentos`.
 6. Sistema extrai o texto do PDF e gera uma chave unica por valor + descricao normalizada.
 7. Sistema ignora transacoes ja importadas anteriormente.
 8. Sistema compara valor recebido e nome/descricao do PDF com inscricoes pendentes.
-9. Quando bater valor e nome, pagamento vira `PAGO` e inscricao vira `CONFIRMADA`.
+9. Quando bater valor e protocolo, referencia ou nick, pagamento vira `PAGO` e inscricao vira `CONFIRMADA`.
 
 Esse modo nao confirma Pix agendado antes da compensacao, porque ele depende da transacao ja aparecer no PDF do banco.
 

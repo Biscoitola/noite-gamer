@@ -8,8 +8,9 @@ import { prisma } from "@/lib/db";
 export async function cancelRegistrationAction(formData: FormData) {
   await requireAdminRole("ADMIN");
   const registrationId = String(formData.get("registrationId") || "");
+  const returnTo = getSafeReturnPath(String(formData.get("returnTo") || "/admin/inscricoes"));
   if (!registrationId) {
-    redirect("/admin/inscricoes?error=Inscricao invalida.");
+    redirect(withReturnMessage(returnTo, "error", "Inscricao invalida."));
   }
 
   await prisma.$transaction(async (tx) => {
@@ -46,7 +47,7 @@ export async function cancelRegistrationAction(formData: FormData) {
   revalidatePath("/admin/torneios");
   revalidatePath("/admin/relatorios/inscritos");
   revalidatePath("/torneios");
-  redirect("/admin/inscricoes?success=Inscricao cancelada. Gere a chave novamente para atualizar os confrontos.");
+  redirect(withReturnMessage(returnTo, "success", "Inscricao cancelada. Gere a chave novamente para atualizar os confrontos."));
 }
 
 export async function confirmRegistrationManuallyAction(formData: FormData) {
@@ -54,7 +55,7 @@ export async function confirmRegistrationManuallyAction(formData: FormData) {
   const registrationId = String(formData.get("registrationId") || "");
   const returnTo = getSafeReturnPath(String(formData.get("returnTo") || "/admin/inscricoes"));
   if (!registrationId) {
-    redirect(`${returnTo}?error=Inscricao invalida.`);
+    redirect(withReturnMessage(returnTo, "error", "Inscricao invalida."));
   }
 
   try {
@@ -84,7 +85,7 @@ export async function confirmRegistrationManuallyAction(formData: FormData) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel liberar a inscricao.";
-    redirect(`${returnTo}?error=${encodeURIComponent(message)}`);
+    redirect(withReturnMessage(returnTo, "error", message));
   }
 
   revalidatePath("/admin/inscricoes");
@@ -93,9 +94,14 @@ export async function confirmRegistrationManuallyAction(formData: FormData) {
   revalidatePath("/admin/torneios");
   revalidatePath("/admin/relatorios/inscritos");
   revalidatePath("/torneios");
-  redirect(`${returnTo}?success=Inscricao liberada ou reativada manualmente. Gere a chave novamente para atualizar os confrontos.`);
+  redirect(withReturnMessage(returnTo, "success", "Inscricao liberada ou reativada manualmente. Gere a chave novamente para atualizar os confrontos."));
 }
 
 function getSafeReturnPath(value: string) {
   return value.startsWith("/admin/") ? value : "/admin/inscricoes";
+}
+
+function withReturnMessage(path: string, key: "success" | "error", message: string) {
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}${key}=${encodeURIComponent(message)}`;
 }

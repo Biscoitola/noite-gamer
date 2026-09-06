@@ -3,33 +3,29 @@ import { PublicHeader } from "@/components/public-header";
 
 export default function PrivacyPage() {
   return (
-    <>
+    <div className="page-shell min-h-screen">
       <PublicHeader />
-      <Container className="grid max-w-5xl gap-5">
-        <header className="grid gap-2">
-          <p className="text-sm font-black uppercase text-[#B45CFF]">Noite Gamer - 2a Edicao</p>
-          <h1 className="text-4xl font-black text-glow">Politica de Privacidade</h1>
-          <p className="max-w-3xl text-[#D4D4D4]">
+      <Container className="grid max-w-5xl gap-6">
+        <header className="page-hero">
+          <p className="page-eyebrow">Nexus Arena - 2a Edicao</p>
+          <h1 className="page-title">Politica de <strong>Privacidade</strong></h1>
+          <p className="page-lede">
             Esta politica explica como os dados dos participantes sao coletados e usados para inscricao, pagamento,
-            check-in, organizacao dos torneios e comunicacoes da Noite Gamer.
+            check-in, organizacao dos torneios e comunicacoes da Nexus Arena.
           </p>
         </header>
 
         <PrivacySection title="1. Quem controla os dados">
           <p>
-            A organizacao da Noite Gamer, realizada no HARP em Tapejara/RS, e responsavel pelo tratamento dos dados
+            A organizacao da Nexus Arena, realizada no HARP em Tapejara/RS, e responsavel pelo tratamento dos dados
             informados no sistema do evento. O contato oficial da organizacao deve ser divulgado nos canais do evento.
           </p>
         </PrivacySection>
 
         <PrivacySection title="2. Dados coletados">
           <ul>
-            <li>Nome completo.</li>
             <li>Nick ou nome publico para exibicao nas chaves.</li>
             <li>WhatsApp.</li>
-            <li>E-mail, quando informado ou exigido pela organizacao.</li>
-            <li>Data de nascimento ou idade, quando configurado.</li>
-            <li>Cidade.</li>
             <li>Modalidades escolhidas.</li>
             <li>Status de inscricao, pagamento, check-in e resultados.</li>
             <li>Consentimentos de regulamento, privacidade e uso de imagem, quando aplicavel.</li>
@@ -60,8 +56,7 @@ export default function PrivacyPage() {
         <PrivacySection title="5. Dados publicos">
           <p>
             As telas publicas de torneio exibem somente informacoes necessarias para acompanhar a competicao, como nick,
-            modalidade, confrontos e resultados. Nome completo, WhatsApp, e-mail e dados de pagamento ficam restritos ao
-            painel administrativo.
+            modalidade, confrontos e resultados. WhatsApp e dados de pagamento ficam restritos ao painel administrativo.
           </p>
         </PrivacySection>
 
@@ -76,7 +71,7 @@ export default function PrivacyPage() {
         <PrivacySection title="7. Compartilhamento">
           <p>Os dados podem ser acessados por:</p>
           <ul>
-            <li>Equipe administrativa autorizada da Noite Gamer.</li>
+            <li>Equipe administrativa autorizada da Nexus Arena.</li>
             <li>Provedor de pagamento, quando necessario para processar Pix.</li>
             <li>Servicos de e-mail ou notificacao, quando configurados.</li>
             <li>Autoridades competentes, quando houver obrigacao legal.</li>
@@ -106,7 +101,7 @@ export default function PrivacyPage() {
             <li>Confirmar se seus dados sao tratados.</li>
             <li>Solicitar acesso aos dados cadastrados.</li>
             <li>Corrigir dados incompletos ou desatualizados.</li>
-            <li>Solicitar exclusao ou anonimização quando aplicavel.</li>
+            <li>Solicitar exclusao ou anonimizaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o quando aplicavel.</li>
             <li>Revogar consentimentos quando o tratamento depender deles.</li>
             <li>Solicitar informacoes sobre compartilhamento.</li>
           </ul>
@@ -115,7 +110,7 @@ export default function PrivacyPage() {
         <PrivacySection title="11. Uso de imagem">
           <p>
             Caso o participante aceite a autorizacao de uso de imagem, fotos e videos feitos durante o evento poderao
-            ser usados para divulgacao da Noite Gamer em redes sociais, materiais promocionais e registros da edicao.
+            ser usados para divulgacao da Nexus Arena em redes sociais, materiais promocionais e registros da edicao.
             Quando a autorizacao nao for concedida, a organizacao deve avaliar medidas razoaveis para evitar uso
             individual identificavel.
           </p>
@@ -124,18 +119,18 @@ export default function PrivacyPage() {
         <PrivacySection title="12. Alteracoes">
           <p>
             Esta politica pode ser atualizada para refletir mudancas no evento, no sistema ou em exigencias legais. A
-            versao vigente deve ficar disponivel no site da Noite Gamer.
+            versao vigente deve ficar disponivel no site da Nexus Arena.
           </p>
         </PrivacySection>
       </Container>
-    </>
+    </div>
   );
 }
 
 function PrivacySection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <Panel className="interactive-panel privacy-copy">
-      <h2 className="text-xl font-black text-[#FFD400]">{title}</h2>
+      <h2 className="text-xl font-black text-[#A855F7]">{title}</h2>
       <div className="mt-3 grid gap-3 leading-7 text-[#D4D4D4]">{children}</div>
     </Panel>
   );

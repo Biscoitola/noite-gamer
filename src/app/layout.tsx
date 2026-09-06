@@ -2,18 +2,18 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Noite Gamer - 2a Edicao",
-  description: "Inscricoes, pagamentos Pix e torneios da Noite Gamer no HARP em Tapejara/RS.",
+  title: "Nexus Arena - Arena de Competicoes",
+  description: "Inscricoes, pagamentos Pix e torneios da Nexus Arena no HARP em Tapejara/RS.",
   manifest: "/manifest.json",
   openGraph: {
-    title: "Noite Gamer - 2a Edicao",
-    description: "FIFA 23, Mortal Kombat e Guitar Hero no HARP.",
-    images: ["/share-placeholder.svg"]
+    title: "Nexus Arena - Arena de Competicoes",
+    description: "FIFA 26, Mortal Kombat e Guitar Hero no HARP.",
+    images: ["/assets/nexus-logo-mark.jpeg"]
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#080808",
+  themeColor: "#05030A",
   width: "device-width",
   initialScale: 1
 };

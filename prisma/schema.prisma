@@ -68,6 +68,11 @@ enum MatchStatus {
   LOCKED
 }
 
+enum GameTeamMode {
+  SOLO
+  DOUBLES
+}
+
 enum CouponDiscountType {
   FIXED
   PERCENT
@@ -123,6 +128,7 @@ model Game {
   imageUrl      String?
   price         Decimal            @db.Decimal(10, 2)
   capacity      Int
+  teamMode      GameTeamMode       @default(SOLO)
   showRemaining Boolean            @default(true)
   isActive      Boolean            @default(true)
   rules         Json
@@ -265,6 +271,9 @@ model RegistrationItem {
   finalPrice       Decimal                @db.Decimal(10, 2)
   status           RegistrationItemStatus @default(RESERVED)
   waitlistPosition Int?
+  teamName         String?
+  teammateName     String?
+  teammateWhatsapp String?
   createdAt        DateTime               @default(now())
   registration     Registration           @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   game             Game                   @relation(fields: [gameId], references: [id], onDelete: Restrict)
@@ -346,6 +355,7 @@ model TournamentEntry {
   registrationItemId String
   participantId      String
   seed               Int
+  displayName        String?
   status             String           @default("ACTIVE")
   checkedIn          Boolean          @default(false)
   eliminatedAt       DateTime?

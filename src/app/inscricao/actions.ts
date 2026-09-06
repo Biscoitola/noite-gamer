@@ -14,22 +14,37 @@ type RegistrationFormValues = {
   whatsapp?: string;
   couponCode?: string;
   gameIds: string[];
+  doubles?: Record<string, { teamName?: string; teammateName?: string; teammateWhatsapp?: string }>;
   consentImage?: boolean;
 };
 
 function getFormValues(formData: FormData): RegistrationFormValues {
   const gameIds = formData.getAll("gameIds").map(String);
+  const doubles = Object.fromEntries(
+    gameIds.map((gameId) => [
+      gameId,
+      {
+        teamName: String(formData.get(`teamName:${gameId}`) || ""),
+        teammateName: String(formData.get(`teammateName:${gameId}`) || ""),
+        teammateWhatsapp: String(formData.get(`teammateWhatsapp:${gameId}`) || "")
+      }
+    ])
+  );
   return {
     publicName: String(formData.get("publicName") || ""),
     whatsapp: String(formData.get("whatsapp") || ""),
     couponCode: String(formData.get("couponCode") || ""),
     gameIds,
+    doubles,
     consentImage: formData.get("consentImage") === "on"
   };
 }
 
 function getRegistrationErrorMessage(error: unknown) {
   if (error instanceof Error && error.message.toLowerCase().includes("cupom")) {
+    return error.message;
+  }
+  if (error instanceof Error && error.message.toLowerCase().includes("dupla")) {
     return error.message;
   }
 
@@ -42,6 +57,7 @@ export async function submitRegistration(_previousState: RegistrationFormState, 
     publicName: formData.get("publicName"),
     whatsapp: formData.get("whatsapp"),
     gameIds: values.gameIds,
+    doubles: values.doubles,
     couponCode: formData.get("couponCode"),
     consentTerms: formData.get("consentTerms") === "on",
     consentPrivacy: formData.get("consentPrivacy") === "on",

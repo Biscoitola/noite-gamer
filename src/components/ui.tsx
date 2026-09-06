@@ -10,10 +10,10 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
     <Link
       href={href}
       className={clsx(
-        "focus-ring inline-flex min-h-12 items-center justify-center border px-5 py-3 text-sm font-bold uppercase tracking-wide transition",
+        "focus-ring inline-flex min-h-12 items-center justify-center rounded-[8px] border px-5 py-3 text-sm font-black uppercase transition",
         variant === "primary"
-          ? "border-[#FFE45C] bg-[#FFD400] text-black shadow-[0_0_24px_rgba(255,212,0,0.25)] hover:bg-[#FFE45C]"
-          : "border-[#B45CFF] text-[#F5F5F5] shadow-[0_0_20px_rgba(180,92,255,0.2)] hover:border-[#FFE45C] hover:text-[#FFE45C]"
+          ? "border-[#00FF88] bg-[#00E676] text-[#020704] shadow-[0_0_24px_rgba(0,255,128,0.26)] hover:bg-[#22FF99]"
+          : "border-[#00FF88]/60 bg-black/20 text-[#F5F5F5] shadow-[0_0_20px_rgba(0,255,128,0.12)] hover:border-[#00FF88] hover:text-[#00FF88]"
       )}
     >
       {children}
@@ -22,7 +22,7 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
 }
 
 export function Panel({ children, className, ...props }: React.HTMLAttributes<HTMLElement>) {
-  return <section className={clsx("border border-[#B45CFF]/35 bg-[#111111]/90 p-4 shadow-[0_0_24px_rgba(180,92,255,0.12)]", className)} {...props}>{children}</section>;
+  return <section className={clsx("neon-card border border-[#B45CFF]/35 bg-[#0B0712]/90 p-4 shadow-[0_0_24px_rgba(180,92,255,0.12)]", className)} {...props}>{children}</section>;
 }
 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -35,4 +35,4 @@ export function Field({ label, children }: { label: string; children: React.Reac
 }
 
 export const inputClass =
-  "focus-ring min-h-12 w-full border border-[#B45CFF]/35 bg-[#080808] px-3 py-2 text-base text-[#F5F5F5] placeholder:text-[#A3A3A3]";
+  "focus-ring min-h-12 w-full rounded-[8px] border border-[#B45CFF]/35 bg-[#05030A]/90 px-3 py-2 text-base text-[#F5F5F5] shadow-[inset_0_0_18px_rgba(168,85,247,0.06)] placeholder:text-[#A3A3A3]";

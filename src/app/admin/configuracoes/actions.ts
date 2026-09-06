@@ -17,34 +17,79 @@ import {
 
 export async function createEditionAction(formData: FormData) {
   await requireAdminRole("ADMIN");
-  const name = String(formData.get("name") || "Noite Gamer");
+  const name = String(formData.get("name") || "Nexus Arena");
   const edition = String(formData.get("edition") || "Nova edicao");
   const startsAt = buildLocalDateTime(formData, "eventDate", "eventTime", "19:00");
   const registrationStartsAt = buildLocalDateTime(formData, "registrationStartDate", "registrationStartTime", "08:00", startsAt);
   const registrationEndsAt = buildLocalDateTime(formData, "registrationEndDate", "registrationEndTime", "23:59", startsAt);
-  await prisma.event.create({
-    data: {
-      name,
-      edition,
-      description: String(formData.get("description") || "Edicao configuravel da Noite Gamer."),
-      venue: String(formData.get("venue") || "HARP"),
-      address: String(formData.get("address") || "Endereco a definir"),
-      city: String(formData.get("city") || "Tapejara"),
-      state: String(formData.get("state") || "RS"),
-      startsAt,
-      registrationStartsAt,
-      registrationEndsAt,
-      status: formData.get("status") === "ACTIVE" ? "ACTIVE" : "DRAFT",
-      settings: {
-        paymentExpiresInMinutes: 30,
-        emailRequired: false,
-        imageConsentRequired: false,
-        theme: "purple-neon"
-      }
+  const status = formData.get("status") === "ACTIVE" ? "ACTIVE" : "DRAFT";
+  await prisma.$transaction(async (tx) => {
+    if (status === "ACTIVE") {
+      await tx.event.updateMany({
+        where: { status: "ACTIVE" },
+        data: { status: "DRAFT" }
+      });
     }
+    await tx.event.create({
+      data: {
+        name,
+        edition,
+        description: String(formData.get("description") || "Edicao configuravel da Nexus Arena."),
+        venue: String(formData.get("venue") || "HARP"),
+        address: String(formData.get("address") || "Endereco a definir"),
+        city: String(formData.get("city") || "Tapejara"),
+        state: String(formData.get("state") || "RS"),
+        startsAt,
+        registrationStartsAt,
+        registrationEndsAt,
+        status,
+        settings: {
+          paymentExpiresInMinutes: 30,
+          emailRequired: false,
+          imageConsentRequired: false,
+          theme: "nexus-arena"
+        }
+      }
+    });
   });
-  revalidatePath("/admin/configuracoes");
-  revalidatePath("/");
+  revalidateEventPages();
+  redirectWithConfigMessage("success", "Edicao criada.");
+}
+
+export async function toggleEditionStatusAction(formData: FormData) {
+  await requireAdminRole("ADMIN");
+  const eventId = String(formData.get("eventId") || "");
+  const isActive = formData.get("isActive") === "true";
+  if (!eventId) redirectWithConfigMessage("error", "Edicao invalida.");
+
+  await prisma.$transaction(async (tx) => {
+    if (isActive) {
+      await tx.event.updateMany({
+        where: { status: "ACTIVE", id: { not: eventId } },
+        data: { status: "DRAFT" }
+      });
+    }
+    await tx.event.update({
+      where: { id: eventId },
+      data: { status: isActive ? "ACTIVE" : "DRAFT" }
+    });
+  });
+
+  revalidateEventPages();
+  redirectWithConfigMessage("success", isActive ? "Edicao ativada na home." : "Edicao desativada.");
+}
+
+export async function deleteEditionAction(formData: FormData) {
+  await requireAdminRole("ADMIN");
+  const eventId = String(formData.get("eventId") || "");
+  const confirmed = formData.get("confirmDelete") === "on";
+  if (!eventId) redirectWithConfigMessage("error", "Edicao invalida.");
+  if (!confirmed) redirectWithConfigMessage("error", "Marque a confirmacao antes de excluir a edicao.");
+
+  await prisma.event.delete({ where: { id: eventId } });
+
+  revalidateEventPages();
+  redirectWithConfigMessage("success", "Edicao excluida.");
 }
 
 export async function createGameAction(formData: FormData) {
@@ -57,9 +102,10 @@ export async function createGameAction(formData: FormData) {
       eventId,
       name,
       slug,
-      description: String(formData.get("description") || `${name} na Noite Gamer`),
+      description: String(formData.get("description") || `${name} na Nexus Arena`),
       price: Number(formData.get("price") || 0),
       capacity: Number(formData.get("capacity") || 16),
+      teamMode: formData.get("teamMode") === "DOUBLES" ? "DOUBLES" : "SOLO",
       isActive: formData.get("isActive") === "on",
       rules: { text: "Regras configuraveis pelo administrador." },
       resultSchema: { simple: true }
@@ -82,9 +128,10 @@ export async function updateGameAction(formData: FormData) {
     data: {
       name,
       slug: slugify(rawSlug || name),
-      description: String(formData.get("description") || `${name} na Noite Gamer`),
+      description: String(formData.get("description") || `${name} na Nexus Arena`),
       price: Number(formData.get("price") || 0),
       capacity: Number(formData.get("capacity") || 16),
+      teamMode: formData.get("teamMode") === "DOUBLES" ? "DOUBLES" : "SOLO",
       isActive: formData.get("isActive") === "on"
     }
   });
@@ -234,6 +281,16 @@ function revalidateGamePages() {
   revalidatePath("/");
   revalidatePath("/inscricao");
   revalidatePath("/torneios");
+}
+
+function revalidateEventPages() {
+  revalidateGamePages();
+  revalidatePath("/admin/patrocinadores");
+  revalidatePath("/admin/cupons");
+  revalidatePath("/admin/sorteios");
+  revalidatePath("/patrocinadores");
+  revalidatePath("/premios");
+  revalidatePath("/sorteios");
 }
 
 function buildLocalDateTime(

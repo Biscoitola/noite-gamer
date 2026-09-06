@@ -59,7 +59,7 @@ export async function reconcileOfx(ofxText: string): Promise<OfxImportResult> {
         payloadSanitized: sanitizePayload(transaction) as object,
         processed: Boolean(match),
         processedAt: match ? new Date() : null,
-        error: match ? null : "Nenhuma inscricao pendente bateu valor e nome."
+        error: match ? null : "Nenhuma inscricao pendente bateu valor e nick."
       }
     });
 
@@ -68,7 +68,7 @@ export async function reconcileOfx(ofxText: string): Promise<OfxImportResult> {
         fitId: transaction.fitId,
         amount: transaction.amount,
         description: transactionDescription(transaction),
-        reason: "Sem match por valor e nome"
+        reason: "Sem match por valor e nick"
       });
       continue;
     }
@@ -97,9 +97,8 @@ async function findMatchingPayment(transaction: OfxTransaction) {
   const description = normalizeText(transactionDescription(transaction));
   return candidates.find((payment) => {
     const participant = payment.registration.participant;
-    const fullName = normalizeText(participant.fullName);
     const publicName = normalizeText(participant.publicName);
-    return includesAllWords(description, fullName) || includesAllWords(description, publicName);
+    return includesAllWords(description, publicName);
   });
 }
 

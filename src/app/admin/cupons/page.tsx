@@ -1,15 +1,17 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
+import { AdminEventSelector, type AdminSearchParams, getAdminEventFilter } from "@/lib/admin-event-filter";
 import { requireAdminRole } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createCouponAction, updateCouponAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminCouponsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function AdminCouponsPage({ searchParams }: { searchParams?: Promise<AdminSearchParams> }) {
   await requireAdminRole("ADMIN");
   const params = await searchParams;
-  const events = await prisma.event.findMany({ orderBy: { startsAt: "desc" } });
+  const { events, selectedEventId } = await getAdminEventFilter(params);
   const coupons = await prisma.discountCoupon.findMany({
+    where: selectedEventId ? { eventId: selectedEventId } : {},
     include: { event: true },
     orderBy: [{ isActive: "desc" }, { expiresAt: "desc" }]
   });
@@ -23,13 +25,14 @@ export default async function AdminCouponsPage({ searchParams }: { searchParams?
       </div>
       <Message type="success" value={readSearchParam(params?.success)} />
       <Message type="error" value={readSearchParam(params?.error)} />
+      <AdminEventSelector events={events} selectedEventId={selectedEventId} params={params} />
 
       <Panel className="interactive-panel">
-        <h2 className="text-xl font-black text-[#FFD400]">Cadastrar cupom</h2>
+        <h2 className="text-xl font-black text-[#A855F7]">Cadastrar cupom</h2>
         <form action={createCouponAction} className="mt-4 grid gap-3">
           <div className="grid gap-3 lg:grid-cols-3">
             <Field label="Edicao">
-              <select className={inputClass} name="eventId" required>
+              <select className={inputClass} name="eventId" required defaultValue={selectedEventId}>
                 {events.map((event) => <option key={event.id} value={event.id}>{event.name} - {event.edition}</option>)}
               </select>
             </Field>
@@ -64,7 +67,7 @@ export default async function AdminCouponsPage({ searchParams }: { searchParams?
           <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
             <input name="isActive" type="checkbox" defaultChecked /> Cupom ativo
           </label>
-          <button className="focus-ring min-h-12 bg-[#FFD400] px-4 font-black uppercase text-black">Salvar cupom</button>
+          <button className="focus-ring neon-action min-h-12 px-4 font-black uppercase">Salvar cupom</button>
         </form>
       </Panel>
 
@@ -79,7 +82,7 @@ export default async function AdminCouponsPage({ searchParams }: { searchParams?
               <article className="border border-[#B45CFF]/30 bg-black/25 p-4" key={coupon.id}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-2xl font-black text-[#FFD400]">{coupon.code}</h3>
+                    <h3 className="text-2xl font-black text-[#A855F7]">{coupon.code}</h3>
                     <p className="mt-1 text-sm text-[#D4D4D4]">{coupon.description}</p>
                     <p className="mt-2 text-xs font-black uppercase text-[#B45CFF]">
                       {coupon.event.edition} | {coupon.type === "PERCENT" ? `${Number(coupon.value).toFixed(2)}%` : `R$ ${Number(coupon.value).toFixed(2)}`} | {usesLabel}
@@ -90,7 +93,7 @@ export default async function AdminCouponsPage({ searchParams }: { searchParams?
                   </span>
                 </div>
 
-                <form action={updateCouponAction} className="mt-4 grid gap-3 border border-[#FFD400]/25 bg-[#111111] p-3">
+                <form action={updateCouponAction} className="mt-4 grid gap-3 border border-[#A855F7]/25 bg-[#0B0712] p-3">
                   <input name="couponId" type="hidden" value={coupon.id} />
                   <div className="grid gap-3 lg:grid-cols-3">
                     <Field label="Tipo">

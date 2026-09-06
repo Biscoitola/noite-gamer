@@ -44,7 +44,7 @@ export async function reconcilePdf(buffer: Buffer): Promise<PdfImportResult> {
         payloadSanitized: sanitizePayload(transaction) as object,
         processed: Boolean(match),
         processedAt: match ? new Date() : null,
-        error: match ? null : "Nenhuma inscricao pendente bateu valor e nome no PDF."
+        error: match ? null : "Nenhuma inscricao pendente bateu valor e nick no PDF."
       }
     });
 
@@ -53,7 +53,7 @@ export async function reconcilePdf(buffer: Buffer): Promise<PdfImportResult> {
         fitId: transaction.fitId,
         amount: transaction.amount,
         description: transaction.description,
-        reason: "Sem match por valor e nome"
+        reason: "Sem match por valor e nick"
       });
       continue;
     }
@@ -107,9 +107,8 @@ async function findMatchingPayment(transaction: PdfTransaction) {
     if (protocolReference && description.includes(protocolReference)) return true;
 
     const participant = payment.registration.participant;
-    const fullName = normalizeText(participant.fullName);
     const publicName = normalizeText(participant.publicName);
-    return includesAllWords(description, fullName) || includesAllWords(description, publicName);
+    return includesAllWords(description, publicName);
   });
 }
 

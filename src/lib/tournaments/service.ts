@@ -16,22 +16,25 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
         registration: { status: "CONFIRMADA" },
         ...(onlyCheckedIn ? { checkIns: { some: { canceledAt: null } } } : {})
       },
-      include: { registration: { include: { participant: true } }, entries: true, checkIns: true }
+      include: { registration: { include: { participant: true } }, entries: true, checkIns: true },
+      orderBy: { createdAt: "asc" }
     });
+    const uniqueItems = uniqueRegistrationItemsByPlayer(items);
     await tx.match.deleteMany({ where: { tournamentId: tournament.id } });
     await tx.tournamentRound.deleteMany({ where: { tournamentId: tournament.id } });
     await tx.tournamentEntry.deleteMany({ where: { tournamentId: tournament.id } });
     await tx.tournamentEntry.createMany({
-      data: items.map((item, index) => ({
+      data: uniqueItems.map((item, index) => ({
         tournamentId: tournament.id,
         registrationItemId: item.id,
         participantId: item.registration.participantId,
         seed: index + 1,
+        displayName: getTournamentEntryDisplayName(item),
         checkedIn: item.checkIns?.some((checkIn) => checkIn.canceledAt === null) ?? false
       })),
       skipDuplicates: true
     });
-    if (items.length < 1) {
+    if (uniqueItems.length < 1) {
       await tx.tournament.update({
         where: { id: tournament.id },
         data: {
@@ -53,7 +56,7 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
       include: { participant: true },
       orderBy: { seed: "asc" }
     });
-    const bracket = generateSingleEliminationBracket(entries.map((entry) => ({ id: entry.id, seed: entry.seed, publicName: entry.participant.publicName })));
+    const bracket = generateSingleEliminationBracket(entries.map((entry) => ({ id: entry.id, seed: entry.seed, publicName: entry.displayName ?? entry.participant.publicName })));
     const roundMap = new Map<number, string>();
     for (const round of bracket.rounds) {
       const created = await tx.tournamentRound.create({ data: { tournamentId: tournament.id, number: round.number, name: round.name, order: round.order } });
@@ -98,11 +101,50 @@ export async function ensureTournamentForGame(gameId: string, onlyCheckedIn = fa
   });
 }
 
+type TournamentRegistrationItem = {
+  id: string;
+  teamName?: string | null;
+  teammateName?: string | null;
+  checkIns?: { canceledAt: Date | null }[];
+  registration: {
+    participantId: string;
+    participant: {
+      publicName: string;
+      normalizedWhatsapp: string;
+    };
+  };
+};
+
+function getTournamentEntryDisplayName(item: TournamentRegistrationItem) {
+  if (item.teamName?.trim()) return item.teamName.trim();
+  if (item.teammateName?.trim()) return `${item.registration.participant.publicName} + ${item.teammateName.trim()}`;
+  return item.registration.participant.publicName;
+}
+
+function uniqueRegistrationItemsByPlayer<T extends TournamentRegistrationItem>(items: T[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const participant = item.registration.participant;
+    const identities = [
+      participant.normalizedWhatsapp ? `phone:${participant.normalizedWhatsapp}` : null,
+      `name:${normalizePlayerName(participant.publicName)}`
+    ].filter(Boolean) as string[];
+    if (identities.some((identity) => seen.has(identity))) return false;
+    identities.forEach((identity) => seen.add(identity));
+    return true;
+  });
+}
+
+function normalizePlayerName(value: string) {
+  return value.trim().toLocaleLowerCase("pt-BR").replace(/\s+/g, " ");
+}
+
 export async function resetTournamentState(eventId?: string) {
-  await prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx) => {
     const tournamentWhere = eventId ? { eventId } : {};
-    const tournaments = await tx.tournament.findMany({ where: tournamentWhere, select: { id: true } });
+    const tournaments = await tx.tournament.findMany({ where: tournamentWhere, select: { id: true, game: { select: { slug: true } } } });
     const tournamentIds = tournaments.map((tournament) => tournament.id);
+    const gameSlugs = tournaments.map((tournament) => tournament.game.slug);
 
     if (tournamentIds.length > 0) {
       await tx.match.deleteMany({ where: { tournamentId: { in: tournamentIds } } });
@@ -128,6 +170,37 @@ export async function resetTournamentState(eventId?: string) {
       where: eventId ? { eventId } : {},
       data: { winnerRegistrationId: null, drawnAt: null }
     });
+
+    return { gameSlugs };
+  });
+}
+
+export async function resetSingleTournamentState(tournamentId: string) {
+  return prisma.$transaction(async (tx) => {
+    const tournament = await tx.tournament.findUniqueOrThrow({
+      where: { id: tournamentId },
+      select: { id: true, game: { select: { slug: true } } }
+    });
+
+    await tx.match.deleteMany({ where: { tournamentId: tournament.id } });
+    await tx.tournamentRound.deleteMany({ where: { tournamentId: tournament.id } });
+    await tx.tournamentEntry.deleteMany({ where: { tournamentId: tournament.id } });
+    await tx.tournament.update({
+      where: { id: tournament.id },
+      data: {
+        status: "DRAFT",
+        public: false,
+        bracketSize: null,
+        generatedAt: null,
+        startedAt: null,
+        finishedAt: null,
+        championEntryId: null,
+        runnerUpEntryId: null,
+        thirdPlaceEntryId: null
+      }
+    });
+
+    return { gameSlug: tournament.game.slug };
   });
 }
 
@@ -191,5 +264,134 @@ export async function registerMatchWinner(matchId: string, winnerEntryId: string
     } else {
       await tx.tournament.update({ where: { id: tournamentMatch.tournamentId }, data: { status: "FINISHED", finishedAt: new Date(), championEntryId: winnerEntryId } });
     }
+  });
+}
+
+export async function undoMatchWinner(matchId: string) {
+  return prisma.$transaction(async (tx) => {
+    const tournamentMatch = await tx.match.findUniqueOrThrow({
+      where: { id: matchId },
+      include: { tournament: { include: { game: true } } }
+    });
+    if (!tournamentMatch.winnerEntryId) {
+      throw new Error("Esta partida ainda nao tem vencedor para desfazer.");
+    }
+
+    const nextMatch = tournamentMatch.nextMatchId
+      ? await tx.match.findUnique({ where: { id: tournamentMatch.nextMatchId } })
+      : null;
+    if (nextMatch?.winnerEntryId) {
+      throw new Error("Nao e possivel desfazer porque a partida seguinte ja tem vencedor.");
+    }
+
+    await tx.match.update({
+      where: { id: matchId, version: tournamentMatch.version },
+      data: {
+        winnerEntryId: null,
+        loserEntryId: null,
+        status: tournamentMatch.participant1EntryId && tournamentMatch.participant2EntryId ? "READY" : "PENDING",
+        scoreData: {},
+        finishedAt: null,
+        version: { increment: 1 }
+      }
+    });
+
+    if (nextMatch && tournamentMatch.nextSlot) {
+      const nextSlotEntryId = tournamentMatch.nextSlot === 1 ? nextMatch.participant1EntryId : nextMatch.participant2EntryId;
+      if (nextSlotEntryId === tournamentMatch.winnerEntryId) {
+        const data =
+          tournamentMatch.nextSlot === 1
+            ? { participant1EntryId: null, status: "PENDING" as const }
+            : { participant2EntryId: null, status: "PENDING" as const };
+        await tx.match.update({ where: { id: nextMatch.id }, data });
+      }
+    }
+
+    if (!tournamentMatch.nextMatchId) {
+      await tx.tournament.update({
+        where: { id: tournamentMatch.tournamentId },
+        data: {
+          status: "PUBLISHED",
+          finishedAt: null,
+          championEntryId: null,
+          runnerUpEntryId: null,
+          thirdPlaceEntryId: null
+        }
+      });
+    }
+
+    return {
+      tournamentId: tournamentMatch.tournamentId,
+      gameSlug: tournamentMatch.tournament.game.slug
+    };
+  });
+}
+
+export async function updateMatchParticipants(matchId: string, participant1EntryId: string | null, participant2EntryId: string | null) {
+  return prisma.$transaction(async (tx) => {
+    const tournamentMatch = await tx.match.findUniqueOrThrow({
+      where: { id: matchId },
+      include: {
+        tournament: {
+          include: {
+            entries: true,
+            game: true
+          }
+        }
+      }
+    });
+    const nextMatch = tournamentMatch.nextMatchId
+      ? await tx.match.findUnique({ where: { id: tournamentMatch.nextMatchId } })
+      : null;
+    if (tournamentMatch.winnerEntryId || tournamentMatch.status === "FINISHED") {
+      throw new Error("Nao e possivel trocar jogadores de uma partida finalizada.");
+    }
+    if (nextMatch?.winnerEntryId) {
+      throw new Error("Nao e possivel trocar esta partida porque a proxima ja tem vencedor.");
+    }
+    if (participant1EntryId && participant2EntryId && participant1EntryId === participant2EntryId) {
+      throw new Error("Escolha dois jogadores diferentes para a partida.");
+    }
+
+    const validEntryIds = new Set(tournamentMatch.tournament.entries.map((entry) => entry.id));
+    for (const entryId of [participant1EntryId, participant2EntryId].filter(Boolean)) {
+      if (!validEntryIds.has(entryId!)) throw new Error("Jogador nao pertence a este torneio.");
+    }
+    const selectedEntryIds = [participant1EntryId, participant2EntryId].filter(Boolean) as string[];
+    if (selectedEntryIds.length > 0) {
+      const duplicateInRound = await tx.match.findFirst({
+        where: {
+          tournamentId: tournamentMatch.tournamentId,
+          roundId: tournamentMatch.roundId,
+          id: { not: matchId },
+          OR: [
+            { participant1EntryId: { in: selectedEntryIds } },
+            { participant2EntryId: { in: selectedEntryIds } }
+          ]
+        }
+      });
+      if (duplicateInRound) {
+        throw new Error("Este jogador ja esta em outra partida desta fase.");
+      }
+    }
+
+    const status = participant1EntryId && participant2EntryId ? "READY" : "PENDING";
+    await tx.match.update({
+      where: { id: matchId, version: tournamentMatch.version },
+      data: {
+        participant1EntryId,
+        participant2EntryId,
+        status,
+        loserEntryId: null,
+        scoreData: {},
+        finishedAt: null,
+        version: { increment: 1 }
+      }
+    });
+
+    return {
+      tournamentId: tournamentMatch.tournamentId,
+      gameSlug: tournamentMatch.tournament.game.slug
+    };
   });
 }
