@@ -1,9 +1,11 @@
 import { Container, Field, Panel, inputClass } from "@/components/ui";
 import { requireAdminRole } from "@/lib/auth";
+import { EditionCommerceFields } from "@/components/edition-commerce-fields";
 import { prisma } from "@/lib/db";
 import { HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readHeroPosterSetting } from "@/lib/home-settings";
 import {
   createEditionAction,
+  updateEditionCommerceAction,
   createGameAction,
   createHomeCarouselImageAction,
   deleteEditionAction,
@@ -185,6 +187,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                 <option value="ACTIVE">Ativa</option>
               </select>
             </Field>
+            <EditionCommerceFields />
             <button className="focus-ring min-h-12 bg-[#B45CFF] px-4 font-black uppercase text-white shadow-[0_0_22px_rgba(180,92,255,0.28)]">Salvar edicao</button>
           </form>
         </Panel>
@@ -204,7 +207,7 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
             <Field label="Slug publico"><input className={inputClass} name="slug" placeholder="tekken-8" /></Field>
             <Field label="Descricao"><textarea className={inputClass} name="description" rows={3} /></Field>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Preco"><input className={inputClass} name="price" min="0" step="0.01" type="number" defaultValue="0" /></Field>
+              <Field label="Preco"><input className={inputClass} name="price" min="0" step="0.01" type="number" defaultValue="15" /></Field>
               <Field label="Vagas"><input className={inputClass} name="capacity" min="2" type="number" defaultValue="16" /></Field>
             </div>
             <label className="flex min-h-12 items-center gap-3 border border-[#B45CFF]/35 bg-black/30 px-3 text-sm font-black">
@@ -244,6 +247,11 @@ export default async function SettingsPage({ searchParams }: { searchParams?: Pr
                   Ao ativar, esta edicao aparece na home e as outras edicoes saem do ar.
                 </p>
               </div>
+              <form action={updateEditionCommerceAction} className="mt-4 grid gap-3">
+                <input name="eventId" type="hidden" value={event.id} />
+                <EditionCommerceFields settings={event.settings} />
+                <button className="focus-ring neon-action min-h-11 px-3 text-xs font-black uppercase">Salvar combo e premiação</button>
+              </form>
               <form action={deleteEditionAction} className="mt-3 grid gap-2 border border-red-500/30 bg-red-500/5 p-3">
                 <input name="eventId" type="hidden" value={event.id} />
                 <label className="flex items-start gap-3 text-xs leading-5 text-red-100">

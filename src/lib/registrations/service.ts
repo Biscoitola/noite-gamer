@@ -3,7 +3,8 @@ import { nanoid } from "nanoid";
 import { prisma } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments";
 import { ACTIVE_REGISTRATION_STATUSES, OCCUPIED_ITEM_STATUSES } from "@/lib/capacity";
-import { calculateRegistrationTotal } from "@/lib/pricing";
+import { allocateItemPrices, calculateRegistrationTotal } from "@/lib/pricing";
+import { readEditionCommerceSettings } from "@/lib/edition-settings";
 import { createProtocol, createPublicToken, createRaffleCode, hashToken, normalizeWhatsapp } from "@/lib/security";
 import type { RegistrationInput } from "./schema";
 
@@ -88,8 +89,10 @@ export async function createRegistration(input: RegistrationInput) {
             value: Number(coupon.value),
             active: true
           }
-        : undefined
+        : undefined,
+      readEditionCommerceSettings(event.settings)
     );
+    const itemPrices = allocateItemPrices(games.map((game) => ({ gameId: game.id, price: Number(game.price) })), totals.total);
 
     if (coupon) {
       const updatedCoupon = await tx.discountCoupon.updateMany({
@@ -136,7 +139,7 @@ export async function createRegistration(input: RegistrationInput) {
         publicTokenHash: hashToken(token),
         expiresAt,
         items: {
-          create: games.map((game) => {
+          create: games.map((game, index) => {
             const doubles = input.doubles[game.id];
             const teammateName = doubles?.teammateName?.trim() || null;
             const teamName = game.teamMode === "DOUBLES"
@@ -145,8 +148,8 @@ export async function createRegistration(input: RegistrationInput) {
             return {
               gameId: game.id,
               unitPrice: game.price,
-              finalPrice: Number(game.price),
-              discount: 0,
+              finalPrice: itemPrices[index].finalPrice,
+              discount: itemPrices[index].discount,
               status: "RESERVED",
               teamName,
               teammateName,

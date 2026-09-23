@@ -1,10 +1,14 @@
 import { Container, Panel } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
+import { getEditionPrizePool } from "@/lib/prize-pool";
+import { PrizePool } from "@/components/prize-pool";
 
 export const dynamic = "force-dynamic";
 
 export default async function AwardsPage() {
+  const event = await prisma.event.findFirst({ where: { status: "ACTIVE" } }).catch(() => null);
+  const prizePool = event ? await getEditionPrizePool(event).catch(() => null) : null;
   const sponsorPrizes = await prisma.prize.findMany({
     where: { isActive: true, event: { status: "ACTIVE" } },
     include: { sponsor: true },
@@ -22,6 +26,7 @@ export default async function AwardsPage() {
             Os premios exibidos aqui pertencem somente a edicao ativa da Nexus Arena.
           </p>
         </header>
+        <PrizePool pool={prizePool} />
         <section className="grid gap-4">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Edicao ativa</p>

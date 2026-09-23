@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { ACTIVE_REGISTRATION_STATUSES, OCCUPIED_ITEM_STATUSES, remainingSlots } from "@/lib/capacity";
 import { HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readHeroPosterSetting } from "@/lib/home-settings";
 import type { CSSProperties } from "react";
+import { getEditionPrizePool } from "@/lib/prize-pool";
+import { PrizePool } from "@/components/prize-pool";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,7 @@ export default async function HomePage() {
     prisma.systemSetting.findMany({ where: { key: { in: [HOME_HERO_POSTER_KEY, HOME_CAROUSEL_KEY] } } }).catch(() => [])
   ]);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
+  const prizePool = activeEvent?.status === "ACTIVE" ? await getEditionPrizePool(activeEvent).catch(() => null) : null;
   const sponsors = activeEvent?.sponsors ?? [];
   const prizes = activeEvent?.prizes ?? [];
   const heroPosterUrl = readHeroPosterSetting(homeSettings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value);
@@ -133,6 +136,7 @@ export default async function HomePage() {
             </Panel>
           )}
         </section>
+        <PrizePool pool={prizePool} />
         <section className="grid gap-4">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Premiacao oficial</p>

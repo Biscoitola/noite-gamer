@@ -23,6 +23,7 @@ export async function createEditionAction(formData: FormData) {
   const registrationStartsAt = buildLocalDateTime(formData, "registrationStartDate", "registrationStartTime", "08:00", startsAt);
   const registrationEndsAt = buildLocalDateTime(formData, "registrationEndDate", "registrationEndTime", "23:59", startsAt);
   const status = formData.get("status") === "ACTIVE" ? "ACTIVE" : "DRAFT";
+  const commerceSettings = parseCommerceForm(formData);
   await prisma.$transaction(async (tx) => {
     if (status === "ACTIVE") {
       await tx.event.updateMany({
@@ -44,6 +45,7 @@ export async function createEditionAction(formData: FormData) {
         registrationEndsAt,
         status,
         settings: {
+          ...commerceSettings,
           paymentExpiresInMinutes: 30,
           emailRequired: false,
           imageConsentRequired: false,
@@ -54,6 +56,35 @@ export async function createEditionAction(formData: FormData) {
   });
   revalidateEventPages();
   redirectWithConfigMessage("success", "Edicao criada.");
+}
+
+export async function updateEditionCommerceAction(formData: FormData) {
+  await requireAdminRole("ADMIN");
+  const eventId = String(formData.get("eventId") || "");
+  const commerceSettings = parseCommerceForm(formData);
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  if (!event) redirectWithConfigMessage("error", "Edicao nao encontrada.");
+  const settings = event.settings && typeof event.settings === "object" && !Array.isArray(event.settings) ? event.settings : {};
+  await prisma.event.update({ where: { id: eventId }, data: { settings: { ...settings, ...commerceSettings } } });
+  revalidateEventPages();
+  redirectWithConfigMessage("success", "Combo e premiacao atualizados. Inscricoes existentes mantem seus valores.");
+}
+
+function parseCommerceForm(formData: FormData) {
+  const readNumber = (key: string, max: number) => {
+    const raw = String(formData.get(key) ?? "").trim().replace(",", ".");
+    const value = Number(raw);
+    if (!raw || !Number.isFinite(value) || value < 0 || value > max || Math.abs(value * 100 - Math.round(value * 100)) > 0.000001) {
+      redirectWithConfigMessage("error", "Informe valores validos para o combo e o percentual, com ate duas casas decimais.");
+    }
+    return value;
+  };
+  return {
+    comboEnabled: formData.get("comboEnabled") === "on",
+    comboPrice: readNumber("comboPrice", 999999.99),
+    showPrizePool: formData.get("showPrizePool") === "on",
+    prizePoolPercent: readNumber("prizePoolPercent", 100)
+  };
 }
 
 export async function toggleEditionStatusAction(formData: FormData) {

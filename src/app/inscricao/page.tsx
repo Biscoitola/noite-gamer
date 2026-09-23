@@ -3,11 +3,15 @@ import { PublicHeader } from "@/components/public-header";
 import { remainingSlots } from "@/lib/capacity";
 import { listActiveGames } from "@/lib/registrations/service";
 import { RegistrationForm } from "./registration-form";
+import { readEditionCommerceSettings } from "@/lib/edition-settings";
+import { getEditionPrizePool } from "@/lib/prize-pool";
+import { PrizePool } from "@/components/prize-pool";
 
 export const dynamic = "force-dynamic";
 
 export default async function RegistrationPage() {
   const event = await listActiveGames().catch(() => null);
+  const prizePool = event ? await getEditionPrizePool(event).catch(() => null) : null;
   const games = event?.games.map((game) => ({
     id: game.id,
     name: game.name,
@@ -27,6 +31,7 @@ export default async function RegistrationPage() {
           Garanta sua vaga, informe seus dados e gere o Pix. Depois da confirmacao, seu nome entra no chaveamento e nos sorteios da edicao.
         </p>
       </header>
+      <PrizePool pool={prizePool} />
       {!event ? (
         <Panel>
           <h2 className="text-xl font-black text-[#A855F7]">Banco de dados indisponivel</h2>
@@ -36,7 +41,7 @@ export default async function RegistrationPage() {
         </Panel>
       ) : null}
       <Panel>
-        <RegistrationForm disabled={!event} games={games} />
+        <RegistrationForm disabled={!event} games={games} commerceSettings={readEditionCommerceSettings(event?.settings)} />
       </Panel>
       </Container>
     </div>

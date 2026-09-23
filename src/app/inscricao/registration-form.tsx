@@ -3,6 +3,8 @@
 import { useActionState, useState } from "react";
 import { Field, inputClass } from "@/components/ui";
 import { submitRegistration, type RegistrationFormState } from "./actions";
+import { calculateRegistrationTotal } from "@/lib/pricing";
+import { formatBRL, type EditionCommerceSettings } from "@/lib/edition-settings";
 
 type GameOption = {
   id: string;
@@ -15,11 +17,13 @@ type GameOption = {
 
 const initialState: RegistrationFormState = {};
 
-export function RegistrationForm({ disabled, games }: { disabled: boolean; games: GameOption[] }) {
+export function RegistrationForm({ disabled, games, commerceSettings }: { disabled: boolean; games: GameOption[]; commerceSettings: EditionCommerceSettings }) {
   const [state, formAction, pending] = useActionState(submitRegistration, initialState);
   const [publicName, setPublicName] = useState(state.values?.publicName ?? "");
   const [selectedGameIds, setSelectedGameIds] = useState(() => new Set(state.values?.gameIds ?? []));
   const doublesGames = games.filter((game) => game.teamMode === "DOUBLES" && selectedGameIds.has(game.id));
+  const selectedGames = games.filter((game) => game.remaining > 0 && selectedGameIds.has(game.id));
+  const totals = calculateRegistrationTotal(selectedGames.map((game) => ({ gameId: game.id, price: game.price })), undefined, commerceSettings);
 
   function toggleGame(gameId: string, checked: boolean) {
     setSelectedGameIds((current) => {
@@ -60,7 +64,7 @@ export function RegistrationForm({ disabled, games }: { disabled: boolean; games
                 </span>
               </span>
               <span className="flex items-center gap-3 text-[#00FF88]">
-                R$ {game.price.toFixed(2)}
+                {formatBRL(game.price)}
                 <input
                   className="size-5 accent-[#00FF88]"
                   disabled={game.remaining <= 0}
@@ -75,6 +79,12 @@ export function RegistrationForm({ disabled, games }: { disabled: boolean; games
           </div>
         ))}
       </fieldset>
+      <div className="neon-tile grid gap-2" aria-live="polite">
+        {commerceSettings.comboEnabled && games.length >= 2 ? <p className="font-bold text-[#00FF88]">Combo: dois jogos por {formatBRL(commerceSettings.comboPrice)} na mesma inscrição.</p> : null}
+        {totals.multiGameDiscount > 0 ? <p className="text-sm">Desconto do combo: {formatBRL(totals.multiGameDiscount)}</p> : null}
+        <p className="text-xl font-black">Total: {formatBRL(totals.total)}</p>
+        <p className="text-xs text-[#A3A3A3]">Cupons válidos serão aplicados ao gerar o Pix.</p>
+      </div>
       {doublesGames.length > 0 ? (
         <fieldset className="neon-card grid gap-3 border border-[#B45CFF]/35 p-3">
           <legend className="px-2 text-sm font-bold text-[#A855F7]">Dados das duplas</legend>
