@@ -12,7 +12,7 @@ export async function generateTournamentAction(formData: FormData) {
   try {
     await ensureTournamentForGame(String(formData.get("gameId")), true);
     revalidatePath("/admin/torneios");
-    revalidatePath("/torneios");
+    revalidatePublicResults();
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel gerar a chave.";
     redirect(withMessage(returnPrefix, "error", message));
@@ -27,7 +27,7 @@ export async function winnerAction(formData: FormData) {
   try {
     await registerMatchWinner(String(formData.get("matchId")), String(formData.get("winnerEntryId")), { simple: true });
     revalidatePath("/admin/torneios");
-    revalidatePath("/torneios");
+    revalidatePublicResults();
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel registrar o vencedor.";
     redirect(withMessage(adminTournamentsPath(eventId, tournamentId), "error", message));
@@ -42,7 +42,7 @@ export async function undoWinnerAction(formData: FormData) {
   try {
     const result = await undoMatchWinner(String(formData.get("matchId")));
     revalidatePath("/admin/torneios");
-    revalidatePath("/torneios");
+    revalidatePublicResults();
     revalidatePath(`/torneios/${result.gameSlug}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel desfazer o vencedor.";
@@ -61,7 +61,7 @@ export async function updateMatchParticipantsAction(formData: FormData) {
   try {
     const result = await updateMatchParticipants(matchId, participant1EntryId, participant2EntryId);
     revalidatePath("/admin/torneios");
-    revalidatePath("/torneios");
+    revalidatePublicResults();
     revalidatePath(`/torneios/${result.gameSlug}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel atualizar a partida.";
@@ -81,11 +81,8 @@ export async function resetTournamentsAction(formData: FormData) {
   try {
     const result = await resetTournamentState(eventId || undefined);
     revalidatePath("/admin/torneios");
-    revalidatePath("/torneios");
-    revalidatePath("/ao-vivo");
+    revalidatePublicResults();
     result.gameSlugs.forEach((slug) => revalidatePath(`/torneios/${slug}`));
-    revalidatePath("/admin/sorteios");
-    revalidatePath("/sorteios");
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel zerar os torneios.";
     redirect(withMessage(adminTournamentsPath(eventId), "error", message));
@@ -100,8 +97,7 @@ export async function resetSingleTournamentAction(formData: FormData) {
   try {
     const result = await resetSingleTournamentState(tournamentId);
     revalidatePath("/admin/torneios");
-    revalidatePath("/torneios");
-    revalidatePath("/ao-vivo");
+    revalidatePublicResults();
     revalidatePath(`/torneios/${result.gameSlug}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nao foi possivel zerar esta chave.";
@@ -120,4 +116,12 @@ function adminTournamentsPath(eventId?: string, tournamentId?: string) {
 
 function withMessage(path: string, key: "success" | "error", message: string) {
   return `${path}${path.includes("?") ? "&" : "?"}${key}=${encodeURIComponent(message)}`;
+}
+
+function revalidatePublicResults() {
+  revalidatePath("/torneios");
+  revalidatePath("/torneios/[slug]", "page");
+  revalidatePath("/ao-vivo");
+  revalidatePath("/sorteios");
+  revalidatePath("/admin/sorteios");
 }

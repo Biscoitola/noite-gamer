@@ -1,6 +1,7 @@
 import { Container, Panel } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export default async function RafflesPage() {
 
   return (
     <div className="page-shell min-h-screen">
+      <AutoRefresh />
       <PublicHeader />
       <Container className="grid max-w-6xl gap-6">
         <header className="page-hero">

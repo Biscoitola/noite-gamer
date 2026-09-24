@@ -114,6 +114,7 @@ export async function clearPrizeWinnerAction(formData: FormData) {
 }
 
 function revalidateSponsorPages(sponsorId?: string) {
+  revalidatePath("/admin/sorteios");
   revalidatePath("/admin/patrocinadores");
   revalidatePath("/patrocinadores");
   if (sponsorId) revalidatePath(`/patrocinadores/${sponsorId}`);

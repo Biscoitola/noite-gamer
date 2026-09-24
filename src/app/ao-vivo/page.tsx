@@ -1,6 +1,7 @@
 import { Container, Panel } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default async function LivePage() {
   }).catch(() => null);
   return (
     <div className="page-shell min-h-screen">
+      <AutoRefresh />
       <PublicHeader />
       <Container className="grid min-h-[calc(100vh-72px)] content-center">
       <Panel className="interactive-panel page-hero text-center">
