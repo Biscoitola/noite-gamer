@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+.mobile-bracket,
+.mobile-menu-button,
+.mobile-keys-link,
+.mobile-winner-label {
+  display: none;
+}
+
 :root {
   --background: #05030a;
   --foreground: #f5f5f5;
@@ -1377,7 +1384,7 @@ a {
   line-height: 1;
 }
 
-.public-player-row span:last-child {
+.public-player-row span:nth-child(2) {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1739,5 +1746,237 @@ a {
 
   .world-center .champion-box strong {
     font-size: 0.68rem;
+  }
+}
+
+/* Readable layouts and touch targets on phones and small tablets. */
+@media (max-width: 760px) {
+  .page-shell main,
+  .nexus-home main,
+  .admin-main {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .page-shell main > *,
+  .nexus-home main > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .page-title {
+    font-size: clamp(2rem, 8.5vw, 3.4rem);
+    line-height: 1.08;
+  }
+
+  .page-lede {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .page-shell .text-xs,
+  .nexus-home .text-xs {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .page-eyebrow {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .page-shell input:not([type="checkbox"]):not([type="radio"]),
+  .page-shell select,
+  .page-shell textarea {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 1rem;
+  }
+
+  .page-shell input[type="checkbox"],
+  .page-shell input[type="radio"] {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+  }
+
+  .form-check {
+    min-height: 48px;
+    align-items: center;
+  }
+
+  .public-nav-shell {
+    padding-block: 8px;
+  }
+
+  .public-nav-inner {
+    flex-wrap: wrap;
+    gap: 8px;
+    overflow: visible;
+  }
+
+  .mobile-menu-button,
+  .mobile-keys-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(192, 132, 252, 0.6);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+
+  .mobile-keys-link {
+    margin-left: auto;
+    border-color: #00ff88;
+    color: #00ff88;
+  }
+
+  .public-nav-inner > button:last-child {
+    display: none;
+  }
+
+  .public-nav-links {
+    display: none;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .public-nav-links.public-nav-open {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 65dvh;
+    overflow-y: auto;
+    padding-top: 8px;
+  }
+
+  .public-nav-links a {
+    min-height: 48px;
+    padding: 12px;
+    font-size: 0.875rem;
+    white-space: normal;
+  }
+
+  .home-title {
+    font-size: clamp(3.5rem, 19vw, 6.4rem);
+    line-height: 0.9;
+  }
+
+  .home-kicker {
+    letter-spacing: 0.18em;
+    line-height: 1.5;
+  }
+
+  .home-subtitle {
+    letter-spacing: 0.12em;
+    line-height: 1.5;
+  }
+
+  .home-hero::before {
+    display: none;
+  }
+
+  .desktop-bracket {
+    display: none;
+  }
+
+  .mobile-bracket {
+    display: grid;
+    width: 100%;
+  }
+
+  .mobile-bracket .champion-box {
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .mobile-bracket .champion-box span {
+    font-size: 0.875rem;
+  }
+
+  .mobile-bracket .champion-box strong {
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-bracket-round {
+    min-width: 0;
+    border: 1px solid rgba(192, 132, 252, 0.5);
+    border-radius: 8px;
+    background: #0b0712;
+  }
+
+  .mobile-bracket-round summary {
+    min-height: 56px;
+    padding: 16px;
+    color: #e9d5ff;
+    font-size: 1.125rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .mobile-bracket-round summary span:last-child {
+    margin-left: 12px;
+    color: #d4d4d4;
+    font-size: 0.875rem;
+    font-weight: 400;
+  }
+
+  .mobile-bracket .world-match-card {
+    height: auto;
+    min-height: 132px;
+    padding: 12px;
+    overflow: visible;
+  }
+
+  .mobile-bracket .world-match-head {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .mobile-bracket .world-match-head span {
+    color: #d8b4fe;
+    text-align: right;
+  }
+
+  .mobile-bracket .world-player-list {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .mobile-bracket .public-player-row {
+    grid-template-columns: 12px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .mobile-bracket .public-player-row span:nth-child(2) {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-bracket .public-player-winner {
+    border-color: #00ff88;
+    color: #00ff88;
+  }
+
+  .mobile-bracket .mobile-winner-label {
+    display: block;
+    grid-column: 2;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .public-nav-inner > a:first-child > span:last-child {
+    display: none;
   }
 }

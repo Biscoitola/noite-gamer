@@ -92,7 +92,22 @@ export default async function TournamentSlugPage({ params }: { params: Promise<{
           <p className="page-lede mx-auto">Chaveamento mata-mata atualizado automaticamente durante o evento.</p>
         </header>
 
-        <div className="world-bracket-viewport pb-4">
+        <div className="mobile-bracket grid gap-4">
+          <div className="champion-box">
+            <span>Campeão</span>
+            <strong>{champion ?? "A definir"}</strong>
+          </div>
+          <p className="text-sm text-[#D4D4D4]">Toque em uma fase para ver os confrontos. O vencedor fica destacado em verde.</p>
+          {rounds.map((round) => (
+            <details className="mobile-bracket-round" key={round.id} open>
+              <summary><span>{round.name}</span><span>{round.matches.length} {round.matches.length === 1 ? "partida" : "partidas"}</span></summary>
+              <div className="grid gap-3 p-3">
+                {round.matches.map((match) => <MatchCard key={match.id} match={match} />)}
+              </div>
+            </details>
+          ))}
+        </div>
+        <div className="world-bracket-viewport desktop-bracket pb-4">
           <div className="world-bracket scratched mx-auto">
             <BracketSide rounds={leftRounds} side="left" />
 
@@ -170,10 +185,10 @@ function BracketSide({ rounds, side }: { rounds: SideRound[]; side: "left" | "ri
 
 function formatRoundName(name: string) {
   const normalized = name.toLowerCase();
-  if (normalized.includes("final")) return "Final";
   if (normalized.includes("semifinal")) return "Semifinais";
   if (normalized.includes("quartas")) return "Quartas";
   if (normalized.includes("oitavas")) return "Oitavas";
+  if (normalized.includes("final")) return "Final";
   return name.replace("a fase", "a Fase");
 }
 
@@ -196,7 +211,7 @@ function MatchCard({ match, side = "center" }: { match: PublicMatch; side?: "lef
     <article className={`world-match-card world-match-${side}`}>
       <div className="world-match-head">
         <strong>Jogo {match.position}</strong>
-        <span>{match.winner ? "OK" : match.status === "READY" ? "AO VIVO" : "PEND"}</span>
+        <span>{match.winner ? "Encerrado" : match.status === "READY" ? "Ao vivo" : match.status === "BYE" ? "Avanço automático" : "Aguardando"}</span>
       </div>
       <div className="world-player-list">
         <PlayerRow name={match.participant1} winner={match.winner === match.participant1} />
@@ -211,6 +226,7 @@ function PlayerRow({ name, winner }: { name: string; winner: boolean }) {
     <div className={`public-player-row ${winner ? "public-player-winner" : ""}`}>
       <span className="player-badge" />
       <span>{name}</span>
+      {winner ? <span className="mobile-winner-label">Vencedor</span> : null}
     </div>
   );
 }
