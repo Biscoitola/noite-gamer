@@ -22,7 +22,7 @@ describe("valor cobrado na inscrição", () => {
     vi.clearAllMocks();
     mocks.event.mockResolvedValue({
       id: "edition", settings: { comboEnabled: true, comboPrice: 24.9 },
-      games: ["rocket", "mk"].map((id) => ({ id, name: id, price: 15, capacity: 32, teamMode: "SOLO" }))
+      games: ["rocket", "mk", "fifa"].map((id) => ({ id, name: id === "fifa" ? "FIFA 26" : id === "mk" ? "Mortal Kombat" : "Rocket League", price: 15, capacity: 32, teamMode: "SOLO" }))
     });
     mocks.registration.mockResolvedValue({ id: "registration", protocol: "PROTOCOL" });
     mocks.charge.mockImplementation(async ({ amount }) => ({
@@ -33,7 +33,10 @@ describe("valor cobrado na inscrição", () => {
 
   it.each([
     [["rocket"], 15],
-    [["rocket", "mk"], 24.9]
+    [["rocket", "mk"], 24.9],
+    [["rocket", "fifa"], 20],
+    [["mk", "fifa"], 20],
+    [["rocket", "mk", "fifa"], 29.9]
   ] as const)("grava e cobra o total correto para %j", async (gameIds, amount) => {
     await createRegistration({ publicName: "Jogador", whatsapp: "54999999999", gameIds: [...gameIds], doubles: {}, consentTerms: true, consentPrivacy: true, consentImage: false });
     expect(mocks.charge).toHaveBeenCalledWith(expect.objectContaining({ amount }));
@@ -41,6 +44,11 @@ describe("valor cobrado na inscrição", () => {
     const data = mocks.registration.mock.calls[0][0].data;
     expect(data.totalAmount).toBe(amount);
     expect(data.items.create.reduce((sum: number, item: { finalPrice: number }) => sum + Math.round(item.finalPrice * 100), 0)).toBe(Math.round(amount * 100));
+  });
+
+  it("impede FIFA avulso antes de gerar cobrança", async () => {
+    await expect(createRegistration({ publicName: "Jogador", whatsapp: "54999999999", gameIds: ["fifa"], doubles: {}, consentTerms: true, consentPrivacy: true, consentImage: false })).rejects.toThrow(/Escolha Mortal Kombat/);
+    expect(mocks.charge).not.toHaveBeenCalled();
   });
 
   it("cobra cupom sobre o combo e mantém o desconto nos itens", async () => {

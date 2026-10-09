@@ -6,6 +6,7 @@ import { HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readH
 import type { CSSProperties } from "react";
 import { getEditionPrizePool } from "@/lib/prize-pool";
 import { PrizePool } from "@/components/prize-pool";
+import { isFifaAddon } from "@/lib/registrations/addon";
 
 export const dynamic = "force-dynamic";
 
@@ -126,13 +127,12 @@ export default async function HomePage() {
                 {game.description}
               </p>
               <p className="mt-3 text-sm font-black text-[#B45CFF]">
-                R$ {Number(game.price).toFixed(2)} - {remainingSlots(game.capacity, game._count.items)} vaga{remainingSlots(game.capacity, game._count.items) === 1 ? "" : "s"} disponive{remainingSlots(game.capacity, game._count.items) === 1 ? "l" : "is"}
+                {isFifaAddon(game) ? "Adicional de R$ 5,00 com Mortal Kombat ou Rocket League" : `R$ ${Number(game.price).toFixed(2)}`} - {remainingSlots(game.capacity, game._count.items)} vaga{remainingSlots(game.capacity, game._count.items) === 1 ? "" : "s"} disponive{remainingSlots(game.capacity, game._count.items) === 1 ? "l" : "is"}
               </p>
             </Panel>
           )) : (
             <Panel className="sm:col-span-3">
-              <h2 className="text-xl font-black text-[#A855F7]">Configure sua primeira edicao</h2>
-              <p className="mt-2 text-[#A3A3A3]">Entre no admin e crie edicoes e jogos para liberar as inscricoes.</p>
+              <h2 className="text-xl font-black text-[#A855F7]">Jogos em breve</h2>
             </Panel>
           )}
         </section>
@@ -157,7 +157,6 @@ export default async function HomePage() {
           ) : (
             <Panel>
               <h2 className="text-xl font-black text-[#A855F7]">Premios em breve</h2>
-              <p className="mt-2 text-[#A3A3A3]">Cadastre premios nos patrocinadores da edicao ativa para aparecerem aqui.</p>
             </Panel>
           )}
         </section>
@@ -186,7 +185,6 @@ export default async function HomePage() {
           ) : (
             <Panel>
               <h2 className="text-xl font-black text-[#A855F7]">Patrocinadores em breve</h2>
-              <p className="mt-2 text-[#A3A3A3]">Cadastre patrocinadores no admin e marque a opcao de carrossel para aparecerem aqui.</p>
             </Panel>
           )}
         </section>

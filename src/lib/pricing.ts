@@ -2,6 +2,7 @@ export type PriceItem = {
   gameId: string;
   price: number;
   discount?: number;
+  isAddon?: boolean;
 };
 
 export type Coupon = {
@@ -12,10 +13,13 @@ export type Coupon = {
 };
 
 export function calculateRegistrationTotal(items: PriceItem[], coupon?: Coupon, combo?: { comboEnabled: boolean; comboPrice: number }) {
+  const baseItems = items.filter((item) => !item.isAddon);
+  if (items.some((item) => item.isAddon) && baseItems.length === 0) throw new Error("Escolha Mortal Kombat ou Rocket League antes de adicionar FIFA 26.");
+  const baseSubtotal = roundMoney(baseItems.reduce((sum, item) => sum + item.price - (item.discount ?? 0), 0));
   const subtotal = roundMoney(items.reduce((sum, item) => sum + item.price - (item.discount ?? 0), 0));
   const multiGameDiscount = combo
-    ? combo.comboEnabled && items.length === 2 ? Math.max(0, subtotal - combo.comboPrice) : 0
-    : items.length >= 3 ? 10 : items.length === 2 ? 5 : 0;
+    ? combo.comboEnabled && baseItems.length === 2 ? Math.max(0, baseSubtotal - combo.comboPrice) : 0
+    : baseItems.length >= 3 ? 10 : baseItems.length === 2 ? 5 : 0;
   const rawCouponDiscount =
     coupon?.active === true
       ? coupon.type === "fixed" || coupon.type === "FIXED"

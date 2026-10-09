@@ -4,6 +4,13 @@ import { allocateItemPrices, calculateRegistrationTotal, hasCapacity } from "./p
 describe("pricing", () => {
   const games = [{ gameId: "rocket", price: 15 }, { gameId: "mk", price: 15 }];
   const combo = { comboEnabled: true, comboPrice: 24.9 };
+  it("adiciona FIFA por 5 sem alterar o desconto do combo", () => {
+    const fifa = { gameId: "fifa", price: 5, isAddon: true };
+    expect(calculateRegistrationTotal([games[0], fifa], undefined, combo).total).toBe(20);
+    expect(calculateRegistrationTotal([...games, fifa], undefined, combo).total).toBe(29.9);
+    expect(calculateRegistrationTotal([...games, fifa], undefined, { ...combo, comboEnabled: false }).total).toBe(35);
+    expect(() => calculateRegistrationTotal([fifa], undefined, combo)).toThrow(/Escolha/);
+  });
 
   it("cobra 15 por um jogo e 24,90 por dois", () => {
     expect(calculateRegistrationTotal(games.slice(0, 1), undefined, combo).total).toBe(15);

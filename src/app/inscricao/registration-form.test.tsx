@@ -9,15 +9,27 @@ describe("resumo da inscrição", () => {
   it("atualiza o valor ao marcar e desmarcar os jogos", () => {
     render(<RegistrationForm disabled={false} commerceSettings={{ comboEnabled: true, comboPrice: 24.9, showPrizePool: true, prizePoolPercent: 90 }} games={[
       { id: "rocket", name: "Rocket League", price: 15, capacity: 32, remaining: 32, teamMode: "SOLO" },
-      { id: "mk", name: "Mortal Kombat", price: 15, capacity: 32, remaining: 32, teamMode: "SOLO" }
+      { id: "mk", name: "Mortal Kombat", price: 15, capacity: 32, remaining: 32, teamMode: "SOLO" },
+      { id: "fifa", name: "FIFA 26", price: 5, capacity: 32, remaining: 32, teamMode: "SOLO" }
     ]} />);
     expect(screen.getByText(/Total:/)).toHaveTextContent("0,00");
+    const fifa = screen.getByRole("checkbox", { name: /Quero jogar FIFA 26/ });
+    expect(fifa).toBeDisabled();
     fireEvent.click(screen.getByRole("checkbox", { name: /Rocket League/ }));
     expect(screen.getByText(/Total:/)).toHaveTextContent("15,00");
+    fireEvent.click(fifa);
+    expect(screen.getByText(/Total:/)).toHaveTextContent("20,00");
+    fireEvent.click(fifa);
     fireEvent.click(screen.getByRole("checkbox", { name: /Mortal Kombat/ }));
     expect(screen.getByText(/Total:/)).toHaveTextContent("24,90");
     expect(screen.getByText(/Desconto do combo:/)).toHaveTextContent("5,10");
+    fireEvent.click(fifa);
+    expect(screen.getByText(/Total:/)).toHaveTextContent("29,90");
     fireEvent.click(screen.getByRole("checkbox", { name: /Rocket League/ }));
-    expect(screen.getByText(/Total:/)).toHaveTextContent("15,00");
+    expect(screen.getByText(/Total:/)).toHaveTextContent("20,00");
+    fireEvent.click(screen.getByRole("checkbox", { name: /^Mortal Kombat/ }));
+    expect(fifa).not.toBeChecked();
+    expect(fifa).toBeDisabled();
+    expect(screen.getByText(/Total:/)).toHaveTextContent("0,00");
   });
 });

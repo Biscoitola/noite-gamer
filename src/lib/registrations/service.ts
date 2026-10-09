@@ -7,6 +7,7 @@ import { allocateItemPrices, calculateRegistrationTotal } from "@/lib/pricing";
 import { readEditionCommerceSettings } from "@/lib/edition-settings";
 import { createProtocol, createPublicToken, createRaffleCode, hashToken, normalizeWhatsapp } from "@/lib/security";
 import type { RegistrationInput } from "./schema";
+import { isFifaAddon, isFifaBaseGame } from "./addon";
 
 export async function listActiveGames() {
   const event = await prisma.event.findFirst({
@@ -38,6 +39,7 @@ export async function createRegistration(input: RegistrationInput) {
   if (!event) throw new Error("Evento ativo nao encontrado.");
   const games = event.games.filter((game) => input.gameIds.includes(game.id));
   if (games.length !== input.gameIds.length) throw new Error("Modalidade invalida.");
+  if (games.some(isFifaAddon) && !games.some(isFifaBaseGame)) throw new Error("Escolha Mortal Kombat ou Rocket League antes de adicionar FIFA 26 por R$ 5.");
   for (const game of games) {
     if (game.teamMode !== "DOUBLES") continue;
     const doubles = input.doubles[game.id];
@@ -81,7 +83,7 @@ export async function createRegistration(input: RegistrationInput) {
     }
 
     const totals = calculateRegistrationTotal(
-      games.map((game) => ({ gameId: game.id, price: Number(game.price) })),
+      games.map((game) => ({ gameId: game.id, price: isFifaAddon(game) ? 5 : Number(game.price), isAddon: isFifaAddon(game) })),
       coupon
         ? {
             code: coupon.code,
@@ -92,7 +94,7 @@ export async function createRegistration(input: RegistrationInput) {
         : undefined,
       readEditionCommerceSettings(event.settings)
     );
-    const itemPrices = allocateItemPrices(games.map((game) => ({ gameId: game.id, price: Number(game.price) })), totals.total);
+    const itemPrices = allocateItemPrices(games.map((game) => ({ gameId: game.id, price: isFifaAddon(game) ? 5 : Number(game.price) })), totals.total);
 
     if (coupon) {
       const updatedCoupon = await tx.discountCoupon.updateMany({
@@ -147,7 +149,7 @@ export async function createRegistration(input: RegistrationInput) {
               : null;
             return {
               gameId: game.id,
-              unitPrice: game.price,
+              unitPrice: isFifaAddon(game) ? 5 : game.price,
               finalPrice: itemPrices[index].finalPrice,
               discount: itemPrices[index].discount,
               status: "RESERVED",
