@@ -3,11 +3,12 @@ import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
 import { getEditionPrizePool } from "@/lib/prize-pool";
 import { PrizePool } from "@/components/prize-pool";
+import { EmporiumAwards } from "@/components/emporium-awards";
 
 export const dynamic = "force-dynamic";
 
 export default async function AwardsPage() {
-  const event = await prisma.event.findFirst({ where: { status: "ACTIVE" } }).catch(() => null);
+  const event = await prisma.event.findFirst({ where: { status: "ACTIVE" }, orderBy: { startsAt: "desc" } }).catch(() => null);
   const prizePool = event ? await getEditionPrizePool(event).catch(() => null) : null;
   const sponsorPrizes = await prisma.prize.findMany({
     where: { isActive: true, event: { status: "ACTIVE" } },
@@ -23,16 +24,17 @@ export default async function AwardsPage() {
           <p className="page-eyebrow">Premiacao oficial</p>
           <h1 className="page-title">Premios e <strong>trofeus</strong></h1>
           <p className="page-lede">
-            Os premios exibidos aqui pertencem somente a edicao ativa da Nexus Arena.
+            Confira a premiação do The Games Emporium e os prêmios dos patrocinadores da Nexus Arena.
           </p>
         </header>
+        <EmporiumAwards />
         <PrizePool pool={prizePool} />
-        <section className="grid gap-4">
+        {sponsorPrizes.length > 0 ? <section className="grid gap-4">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Edicao ativa</p>
-            <h2 className="text-2xl font-black text-glow">Premios cadastrados</h2>
+            <h2 className="text-2xl font-black text-glow">Premios dos patrocinadores</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#D4D4D4]">
-              Trofeus, brindes e premios cedidos pelos patrocinadores ficam vinculados a uma edicao especifica.
+              Brindes e premios cedidos pelos patrocinadores desta edicao.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -48,9 +50,8 @@ export default async function AwardsPage() {
                 </div>
               </Panel>
             ))}
-            {sponsorPrizes.length === 0 ? <Panel><p>Nenhum premio de patrocinador publicado no momento.</p></Panel> : null}
           </div>
-        </section>
+        </section> : null}
       </Container>
     </div>
   );

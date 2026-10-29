@@ -978,7 +978,7 @@ a {
   aspect-ratio: 1;
   height: auto;
   border: 1px solid rgba(180, 92, 255, 0.32);
-  object-fit: cover;
+  object-fit: contain;
   background: #05030A;
 }
 

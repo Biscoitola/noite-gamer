@@ -2,15 +2,16 @@ import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { Container, Panel } from "@/components/ui";
 import { prisma } from "@/lib/db";
+import { withEditionSponsors } from "@/lib/edition-sponsors";
 
 export const dynamic = "force-dynamic";
 
 export default async function SponsorsPage() {
-  const sponsors = await prisma.sponsor.findMany({
+  const sponsors = withEditionSponsors(await prisma.sponsor.findMany({
     where: { isActive: true, event: { status: "ACTIVE" } },
     include: { prizes: { where: { isActive: true }, orderBy: { createdAt: "desc" } } },
     orderBy: { createdAt: "desc" }
-  }).catch(() => []);
+  }).catch(() => []));
 
   return (
     <div className="page-shell min-h-screen">

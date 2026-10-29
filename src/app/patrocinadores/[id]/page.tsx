@@ -3,15 +3,19 @@ import { notFound } from "next/navigation";
 import { PublicHeader } from "@/components/public-header";
 import { Container, Panel } from "@/components/ui";
 import { prisma } from "@/lib/db";
+import { EDITION_SPONSORS } from "@/lib/edition-sponsors";
 
 export const dynamic = "force-dynamic";
 
 export default async function SponsorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const sponsor = await prisma.sponsor.findFirst({
+  const editionSponsor = EDITION_SPONSORS.find((sponsor) => sponsor.id === id);
+  const storedSponsor = editionSponsor ? null : await prisma.sponsor.findFirst({
     where: { id, isActive: true, event: { status: "ACTIVE" } },
     include: { prizes: { where: { isActive: true }, orderBy: { createdAt: "desc" } } }
   }).catch(() => null);
+  const officialLogo = EDITION_SPONSORS.find((sponsor) => sponsor.name === storedSponsor?.name)?.logoUrl;
+  const sponsor = storedSponsor ? { ...storedSponsor, logoUrl: officialLogo ?? storedSponsor.logoUrl } : editionSponsor;
 
   if (!sponsor) notFound();
 

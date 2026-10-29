@@ -2,11 +2,13 @@ import { ButtonLink, Container, Panel } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { prisma } from "@/lib/db";
 import { ACTIVE_REGISTRATION_STATUSES, OCCUPIED_ITEM_STATUSES, remainingSlots } from "@/lib/capacity";
-import { HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readHeroPosterSetting } from "@/lib/home-settings";
+import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parseHomeCarouselConfig, readHeroPosterSetting } from "@/lib/home-settings";
 import type { CSSProperties } from "react";
 import { getEditionPrizePool } from "@/lib/prize-pool";
 import { PrizePool } from "@/components/prize-pool";
 import { isFifaAddon } from "@/lib/registrations/addon";
+import { EmporiumAwards } from "@/components/emporium-awards";
+import { withEditionSponsors } from "@/lib/edition-sponsors";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +45,7 @@ export default async function HomePage() {
   ]);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
   const prizePool = activeEvent?.status === "ACTIVE" ? await getEditionPrizePool(activeEvent).catch(() => null) : null;
-  const sponsors = activeEvent?.sponsors ?? [];
+  const sponsors = withEditionSponsors(activeEvent?.sponsors ?? []);
   const prizes = activeEvent?.prizes ?? [];
   const heroPosterUrl = readHeroPosterSetting(homeSettings.find((setting) => setting.key === HOME_HERO_POSTER_KEY)?.value);
   const carouselConfig = parseHomeCarouselConfig(homeSettings.find((setting) => setting.key === HOME_CAROUSEL_KEY)?.value);
@@ -92,7 +94,7 @@ export default async function HomePage() {
             </div>
             <img
               src={heroPosterUrl}
-              alt={activeEvent ? `Folder Nexus Arena - ${activeEvent.edition}` : "Folder da Nexus Arena"}
+              alt={heroPosterUrl === DEFAULT_HERO_POSTER_URL ? "The Games Emporium — campeonato de FC26, 18 de novembro de 2026, às 19h, em Tapejara/RS" : activeEvent ? `Folder Nexus Arena - ${activeEvent.edition}` : "Folder da Nexus Arena"}
               className="folder-image"
             />
           </div>
@@ -136,14 +138,14 @@ export default async function HomePage() {
             </Panel>
           )}
         </section>
+        <EmporiumAwards />
         <PrizePool pool={prizePool} />
-        <section className="grid gap-4">
+        {prizes.length > 0 ? <section className="grid gap-4">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Premiacao oficial</p>
             <h2 className="text-3xl font-black text-glow">Quem levantar o trofeu ainda entra em sorteio especial</h2>
           </div>
-          {prizes.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
               {prizes.slice(0, 3).map((prize) => (
               <a className="trophy-card interactive-panel" href="/premios" key={prize.id}>
                 <img src={prize.imageUrl} alt={prize.title} />
@@ -153,13 +155,8 @@ export default async function HomePage() {
                 </div>
               </a>
               ))}
-            </div>
-          ) : (
-            <Panel>
-              <h2 className="text-xl font-black text-[#A855F7]">Premios em breve</h2>
-            </Panel>
-          )}
-        </section>
+          </div>
+        </section> : null}
         <section className="grid gap-4 pb-12">
           <div>
             <p className="text-sm font-black uppercase text-[#B45CFF]">Quem fortalece a Nexus Arena</p>

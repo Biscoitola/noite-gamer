@@ -1,6 +1,6 @@
 export const HOME_HERO_POSTER_KEY = "home.heroPosterUrl";
 export const HOME_CAROUSEL_KEY = "home.carouselConfig";
-export const DEFAULT_HERO_POSTER_URL = "/assets/nexus-arena-17-outubro-2026.png";
+export const DEFAULT_HERO_POSTER_URL = "/assets/the-games-emporium-18-novembro-2026.png";
 
 export type HomeCarouselImage = {
   id: string;
@@ -27,7 +27,7 @@ export function readStringSetting(value: unknown, fallback: string) {
 
 export function readHeroPosterSetting(value: unknown) {
   const imageUrl = readStringSetting(value, DEFAULT_HERO_POSTER_URL);
-  return ["/assets/folder-noite-gamer.png", "/assets/banner-fifa-26-duos.png"].includes(imageUrl)
+  return ["/assets/folder-noite-gamer.png", "/assets/banner-fifa-26-duos.png", "/assets/nexus-arena-17-outubro-2026.png"].includes(imageUrl)
     ? DEFAULT_HERO_POSTER_URL
     : imageUrl;
 }
