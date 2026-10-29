@@ -6,6 +6,7 @@ import { RegistrationForm } from "./registration-form";
 import { readEditionCommerceSettings } from "@/lib/edition-settings";
 import { getEditionPrizePool } from "@/lib/prize-pool";
 import { PrizePool } from "@/components/prize-pool";
+import { usesLegacyFifaAddon } from "@/lib/registrations/addon";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function RegistrationPage() {
         </Panel>
       ) : null}
       <Panel>
-        <RegistrationForm disabled={!event} games={games} commerceSettings={readEditionCommerceSettings(event?.settings)} />
+        <RegistrationForm disabled={!event} games={games} fifaAddonEnabled={usesLegacyFifaAddon(event?.startsAt)} commerceSettings={readEditionCommerceSettings(event?.settings)} />
       </Panel>
       </Container>
     </div>

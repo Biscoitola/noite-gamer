@@ -6,7 +6,7 @@ import { DEFAULT_HERO_POSTER_URL, HOME_CAROUSEL_KEY, HOME_HERO_POSTER_KEY, parse
 import type { CSSProperties } from "react";
 import { getEditionPrizePool } from "@/lib/prize-pool";
 import { PrizePool } from "@/components/prize-pool";
-import { isFifaAddon } from "@/lib/registrations/addon";
+import { isFifaAddon, usesLegacyFifaAddon } from "@/lib/registrations/addon";
 import { EmporiumAwards } from "@/components/emporium-awards";
 import { withEditionSponsors } from "@/lib/edition-sponsors";
 
@@ -44,6 +44,7 @@ export default async function HomePage() {
     prisma.systemSetting.findMany({ where: { key: { in: [HOME_HERO_POSTER_KEY, HOME_CAROUSEL_KEY] } } }).catch(() => [])
   ]);
   const activeEvent = events.find((event) => event.status === "ACTIVE") ?? events[0];
+  const editionGames = games.filter((game) => game.eventId === activeEvent?.id);
   const prizePool = activeEvent?.status === "ACTIVE" ? await getEditionPrizePool(activeEvent).catch(() => null) : null;
   const sponsors = withEditionSponsors(activeEvent?.sponsors ?? []);
   const prizes = activeEvent?.prizes ?? [];
@@ -122,14 +123,14 @@ export default async function HomePage() {
           </div>
         </section>
         <section className="grid gap-4 sm:grid-cols-3">
-          {games.length > 0 ? games.map((game) => (
+          {editionGames.length > 0 ? editionGames.map((game) => (
             <Panel className="interactive-panel" key={game.id}>
               <h2 className="text-xl font-black text-[#A855F7]">{game.name}</h2>
               <p className="mt-2 text-sm leading-6 text-[#A3A3A3]">
                 {game.description}
               </p>
               <p className="mt-3 text-sm font-black text-[#B45CFF]">
-                {isFifaAddon(game) ? "Adicional de R$ 5,00 com Mortal Kombat ou Rocket League" : `R$ ${Number(game.price).toFixed(2)}`} - {remainingSlots(game.capacity, game._count.items)} vaga{remainingSlots(game.capacity, game._count.items) === 1 ? "" : "s"} disponive{remainingSlots(game.capacity, game._count.items) === 1 ? "l" : "is"}
+                {usesLegacyFifaAddon(activeEvent?.startsAt) && isFifaAddon(game) ? "Adicional de R$ 5,00 com Mortal Kombat ou Rocket League" : Number(game.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} - {remainingSlots(game.capacity, game._count.items)} vaga{remainingSlots(game.capacity, game._count.items) === 1 ? "" : "s"} disponive{remainingSlots(game.capacity, game._count.items) === 1 ? "l" : "is"}
               </p>
             </Panel>
           )) : (

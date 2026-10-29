@@ -18,16 +18,17 @@ type GameOption = {
 
 const initialState: RegistrationFormState = {};
 
-export function RegistrationForm({ disabled, games, commerceSettings }: { disabled: boolean; games: GameOption[]; commerceSettings: EditionCommerceSettings }) {
+export function RegistrationForm({ disabled, games, commerceSettings, fifaAddonEnabled = false }: { disabled: boolean; games: GameOption[]; commerceSettings: EditionCommerceSettings; fifaAddonEnabled?: boolean }) {
   const [state, formAction, pending] = useActionState(submitRegistration, initialState);
   const [publicName, setPublicName] = useState(state.values?.publicName ?? "");
   const [selectedGameIds, setSelectedGameIds] = useState(() => new Set(state.values?.gameIds ?? []));
   const doublesGames = games.filter((game) => game.teamMode === "DOUBLES" && selectedGameIds.has(game.id));
   const selectedGames = games.filter((game) => game.remaining > 0 && selectedGameIds.has(game.id));
-  const baseGames = games.filter((game) => !isFifaAddon(game));
-  const fifa = games.find(isFifaAddon);
+  const isAddon = (game: GameOption) => fifaAddonEnabled && isFifaAddon(game);
+  const baseGames = games.filter((game) => !isAddon(game));
+  const fifa = games.find(isAddon);
   const canAddFifa = selectedGames.some(isFifaBaseGame);
-  const totals = calculateRegistrationTotal(selectedGames.map((game) => ({ gameId: game.id, price: isFifaAddon(game) ? 5 : game.price, isAddon: isFifaAddon(game) })), undefined, commerceSettings);
+  const totals = calculateRegistrationTotal(selectedGames.map((game) => ({ gameId: game.id, price: isAddon(game) ? 5 : game.price, isAddon: isAddon(game) })), undefined, commerceSettings);
 
   function toggleGame(gameId: string, checked: boolean) {
     setSelectedGameIds((current) => {
@@ -35,7 +36,7 @@ export function RegistrationForm({ disabled, games, commerceSettings }: { disabl
       if (checked) next.add(gameId);
       else next.delete(gameId);
       if (!games.some((game) => game.remaining > 0 && isFifaBaseGame(game) && next.has(game.id))) {
-        games.filter(isFifaAddon).forEach((game) => next.delete(game.id));
+        games.filter(isAddon).forEach((game) => next.delete(game.id));
       }
       return next;
     });

@@ -6,8 +6,22 @@ vi.mock("./actions", () => ({ submitRegistration: vi.fn() }));
 
 describe("resumo da inscrição", () => {
   afterEach(cleanup);
+  it("permite FIFA sozinho pelo preço configurado na edição atual", () => {
+    render(<RegistrationForm disabled={false} commerceSettings={{ comboEnabled: false, comboPrice: 0, showPrizePool: false, prizePoolPercent: 0 }} games={[
+      { id: "fifa", name: "FIFA 26", price: 35, capacity: 36, remaining: 36, teamMode: "SOLO" }
+    ]} />);
+    expect(screen.queryByText(/Mais uma disputa/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Mortal Kombat/)).not.toBeInTheDocument();
+    const fifa = screen.getByRole("checkbox", { name: /FIFA 26/ });
+    expect(fifa).toBeEnabled();
+    fireEvent.click(fifa);
+    expect(fifa).toBeChecked();
+    expect(screen.getByText(/Total:/)).toHaveTextContent("35,00");
+    fireEvent.click(fifa);
+    expect(screen.getByText(/Total:/)).toHaveTextContent("0,00");
+  });
   it("atualiza o valor ao marcar e desmarcar os jogos", () => {
-    render(<RegistrationForm disabled={false} commerceSettings={{ comboEnabled: true, comboPrice: 24.9, showPrizePool: true, prizePoolPercent: 90 }} games={[
+    render(<RegistrationForm disabled={false} fifaAddonEnabled commerceSettings={{ comboEnabled: true, comboPrice: 24.9, showPrizePool: true, prizePoolPercent: 90 }} games={[
       { id: "rocket", name: "Rocket League", price: 15, capacity: 32, remaining: 32, teamMode: "SOLO" },
       { id: "mk", name: "Mortal Kombat", price: 15, capacity: 32, remaining: 32, teamMode: "SOLO" },
       { id: "fifa", name: "FIFA 26", price: 5, capacity: 32, remaining: 32, teamMode: "SOLO" }
@@ -15,6 +29,8 @@ describe("resumo da inscrição", () => {
     expect(screen.getByText(/Total:/)).toHaveTextContent("0,00");
     const fifa = screen.getByRole("checkbox", { name: /Quero jogar FIFA 26/ });
     expect(fifa).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Somente FIFA 26" })).not.toBeInTheDocument();
+    expect(document.querySelector('input[type="hidden"][name="gameIds"]')).toBeNull();
     fireEvent.click(screen.getByRole("checkbox", { name: /Rocket League/ }));
     expect(screen.getByText(/Total:/)).toHaveTextContent("15,00");
     fireEvent.click(fifa);

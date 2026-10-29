@@ -21,7 +21,7 @@ describe("valor cobrado na inscrição", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.event.mockResolvedValue({
-      id: "edition", settings: { comboEnabled: true, comboPrice: 24.9 },
+      id: "edition", startsAt: new Date("2026-10-17T19:00:00-03:00"), settings: { comboEnabled: true, comboPrice: 24.9 },
       games: ["rocket", "mk", "fifa"].map((id) => ({ id, name: id === "fifa" ? "FIFA 26" : id === "mk" ? "Mortal Kombat" : "Rocket League", price: 15, capacity: 32, teamMode: "SOLO" }))
     });
     mocks.registration.mockResolvedValue({ id: "registration", protocol: "PROTOCOL" });
@@ -46,8 +46,22 @@ describe("valor cobrado na inscrição", () => {
     expect(data.items.create.reduce((sum: number, item: { finalPrice: number }) => sum + Math.round(item.finalPrice * 100), 0)).toBe(Math.round(amount * 100));
   });
 
-  it("impede FIFA avulso antes de gerar cobrança", async () => {
-    await expect(createRegistration({ publicName: "Jogador", whatsapp: "54999999999", gameIds: ["fifa"], doubles: {}, consentTerms: true, consentPrivacy: true, consentImage: false })).rejects.toThrow(/Escolha Mortal Kombat/);
+  it("aceita FIFA sozinho na edição atual e cobra o preço configurado no Pix", async () => {
+    mocks.event.mockResolvedValue({
+      id: "emporium", startsAt: new Date("2026-11-18T19:00:00-03:00"), settings: { comboEnabled: false },
+      games: [{ id: "fifa", name: "FIFA 26", price: 35, capacity: 36, teamMode: "SOLO" }]
+    });
+    await createRegistration({ publicName: "Jogador", whatsapp: "54999999999", gameIds: ["fifa"], doubles: {}, consentTerms: true, consentPrivacy: true, consentImage: false });
+    expect(mocks.charge).toHaveBeenCalledWith(expect.objectContaining({ amount: 35 }));
+    const data = mocks.registration.mock.calls[0][0].data;
+    expect(data.totalAmount).toBe(35);
+    expect(data.items.create[0]).toMatchObject({ unitPrice: 35, finalPrice: 35, discount: 0 });
+  });
+
+  it("rejeita FIFA sozinho antes de gravar ou cobrar", async () => {
+    await expect(createRegistration({ publicName: "Jogador", whatsapp: "54999999999", gameIds: ["fifa"], doubles: {}, consentTerms: true, consentPrivacy: true, consentImage: false })).rejects.toThrow("Escolha Mortal Kombat ou Rocket League");
+    expect(mocks.registration).not.toHaveBeenCalled();
+    expect(mocks.payment).not.toHaveBeenCalled();
     expect(mocks.charge).not.toHaveBeenCalled();
   });
 
